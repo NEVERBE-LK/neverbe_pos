@@ -20,7 +20,7 @@ export default function POSContent() {
             <Spin size="large" />
           </div>
         ) : (
-          <div className="flex-1 flex flex-col min-h-[500px] lg:min-h-0 overflow-hidden">
+          <div className="flex-1 flex flex-col max-h-[60vh] lg:max-h-none lg:min-h-0 overflow-hidden">
             <POSProducts />
           </div>
         )}

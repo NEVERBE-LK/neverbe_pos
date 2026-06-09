@@ -27,7 +27,6 @@ import api from "@/lib/api";
 import { usePOS } from "../context/POSContext";
 import toast from "react-hot-toast";
 import dayjs from "dayjs";
-import POSCredentialVerifyAndRequestAuthorizeForm from "./POSCredentialVerifyAndRequestAuthorizeForm";
 
 const { Text } = Typography;
 
@@ -45,9 +44,6 @@ export default function POSPettyCashDialog({ open, onClose }: POSPettyCashDialog
   const [categories, setCategories] = useState<{ id: string; label: string }[]>([]);
   const [expenses, setExpenses] = useState<any[]>([]);
   const [fileList, setFileList] = useState<any[]>([]);
-
-  const [verifyOpen, setVerifyOpen] = useState(false);
-  const [pendingValues, setPendingValues] = useState<any>(null);
 
   const paymentMethodValue = Form.useWatch("paymentMethod", form);
 
@@ -86,25 +82,18 @@ export default function POSPettyCashDialog({ open, onClose }: POSPettyCashDialog
   };
 
 
-  const handleFinish = (values: any) => {
+  const handleFinish = async (values: any) => {
     if (!selectedStockId) {
       toast.error("Please select a stock location first");
       return;
     }
-    setPendingValues(values);
-    setVerifyOpen(true);
-  };
-
-  const handleVerifySuccess = async () => {
-    if (!pendingValues || !selectedStockId) return;
-    setVerifyOpen(false);
     setLoading(true);
     try {
       const formData = new FormData();
       const pettyCashData: any = {
-        ...pendingValues,
+        ...values,
         stockId: selectedStockId,
-        date: pendingValues.date ? pendingValues.date.toISOString() : dayjs().toISOString(),
+        date: values.date ? values.date.toISOString() : dayjs().toISOString(),
       };
       
       formData.append("data", JSON.stringify(pettyCashData));
@@ -120,7 +109,6 @@ export default function POSPettyCashDialog({ open, onClose }: POSPettyCashDialog
       toast.success("Transaction submitted successfully");
       form.resetFields();
       setFileList([]);
-      setPendingValues(null);
       fetchExpenses();
     } catch (error) {
       console.error("Failed to add petty cash transaction:", error);
@@ -182,8 +170,7 @@ export default function POSPettyCashDialog({ open, onClose }: POSPettyCashDialog
   ];
 
   return (
-    <>
-      <Modal
+    <Modal
       open={open}
       onCancel={onClose}
       width={1000}
@@ -339,17 +326,5 @@ export default function POSPettyCashDialog({ open, onClose }: POSPettyCashDialog
         </div>
       </div>
     </Modal>
-    <POSCredentialVerifyAndRequestAuthorizeForm
-      open={verifyOpen}
-      onCancel={() => {
-        setVerifyOpen(false);
-        setPendingValues(null);
-      }}
-      onSuccess={handleVerifySuccess}
-      title="Verify Petty Cash Transaction"
-      description="Submitting petty cash transactions requires security clearance. Please enter your password."
-      requiredPermission="create_pos_pretty_cash"
-    />
-    </>
   );
 }

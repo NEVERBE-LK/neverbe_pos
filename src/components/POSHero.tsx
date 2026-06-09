@@ -17,6 +17,7 @@ import POSPettyCashDialog from "./POSPettyCashDialog";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase/firebaseClient";
 import toast from "react-hot-toast";
+import POSCredentialVerifyAndRequestAuthorizeForm from "./POSCredentialVerifyAndRequestAuthorizeForm";
 
 export default function POSHero() {
   const {
@@ -37,6 +38,61 @@ export default function POSHero() {
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
   const [showPettyCashDialog, setShowPettyCashDialog] = useState(false);
+
+  // Verification gate state
+  const [verifyOpen, setVerifyOpen] = useState(false);
+  const [verifyPermission, setVerifyPermission] = useState<string>("");
+  const [verifyTitle, setVerifyTitle] = useState("");
+  const [verifyDescription, setVerifyDescription] = useState("");
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
+
+  const requestVerify = (
+    permission: string,
+    title: string,
+    description: string,
+    onSuccess: () => void
+  ) => {
+    setVerifyPermission(permission);
+    setVerifyTitle(title);
+    setVerifyDescription(description);
+    setPendingAction(() => onSuccess);
+    setVerifyOpen(true);
+  };
+
+  const handleVerifySuccess = () => {
+    setVerifyOpen(false);
+    if (pendingAction) pendingAction();
+    setPendingAction(null);
+  };
+
+  const handleVerifyCancel = () => {
+    setVerifyOpen(false);
+    setPendingAction(null);
+  };
+
+  const handleLocationClick = () => {
+    // Skip verification on first setup (no stock selected yet)
+    const hasInitialSetup = typeof window !== "undefined" && !!window.localStorage.getItem("neverbePOSStockId");
+    if (!hasInitialSetup) {
+      openStockDialog();
+      return;
+    }
+    requestVerify(
+      "change_pos_location",
+      "Verify Location Change",
+      "Changing stock location requires security clearance. Please enter your password.",
+      () => openStockDialog()
+    );
+  };
+
+  const handlePettyCashClick = () => {
+    requestVerify(
+      "create_pos_pretty_cash",
+      "Verify Petty Cash Access",
+      "Accessing petty cash management requires security clearance. Please enter your password.",
+      () => setShowPettyCashDialog(true)
+    );
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -70,11 +126,12 @@ export default function POSHero() {
     <>
       <div className="flex flex-col gap-4">
         {/* Top Header Row */}
-        <div className="p-4 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white rounded-2xl shadow-sm border border-gray-100">
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+        <div className="p-4 flex flex-col gap-3 bg-white rounded-2xl shadow-sm border border-gray-100">
+          {/* Status Badges - horizontally scrollable on mobile */}
+          <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pb-1 -mb-1">
             <div
-              className="flex items-center gap-2 px-5 h-12 rounded-xl bg-green-50 border border-green-100 cursor-pointer transition-all duration-200 hover:bg-green-600 hover:text-white group w-full sm:w-auto justify-center sm:justify-start"
-              onClick={openStockDialog}
+              className="flex items-center gap-2 px-5 h-12 rounded-xl bg-green-50 border border-green-100 cursor-pointer transition-all duration-200 hover:bg-green-600 hover:text-white group shrink-0"
+              onClick={handleLocationClick}
             >
               <span className="text-xs font-bold uppercase tracking-wide text-green-700 group-hover:text-green-100">
                 Location:
@@ -85,7 +142,7 @@ export default function POSHero() {
             </div>
 
             {/* Connection Status Indicator */}
-            <div className={`flex items-center gap-2 px-4 h-12 rounded-xl border font-bold text-xs uppercase tracking-wide justify-center select-none ${
+            <div className={`flex items-center gap-2 px-4 h-12 rounded-xl border font-bold text-xs uppercase tracking-wide justify-center select-none shrink-0 ${
               isOnline 
                 ? "bg-green-50 text-green-700 border-green-100" 
                 : "bg-amber-50 text-amber-700 border-amber-100 animate-pulse"
@@ -93,26 +150,14 @@ export default function POSHero() {
               <span className={`w-2.5 h-2.5 rounded-full ${isOnline ? "bg-green-500" : "bg-amber-500"}`} />
               <span>{isOnline ? "Online" : `Offline (${offlineQueue?.length || 0})`}</span>
             </div>
-
-            {/* Today's Orders Count Badge */}
-            {selectedStockId && (
-              <div className="flex items-center gap-2 px-4 h-12 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 font-bold text-xs uppercase tracking-wide justify-center select-none">
-                <span className="text-xs font-bold uppercase tracking-wide text-blue-600">
-                  Today's Orders:
-                </span>
-                <span className="text-sm font-extrabold text-blue-900">
-                  {todayOrdersCount}
-                </span>
-              </div>
-            )}
           </div>
 
-          {/* Quick Actions (Right side) */}
-          <div className="flex gap-3 w-full sm:w-auto justify-center">
+          {/* Quick Actions Row - horizontally scrollable on mobile */}
+          <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pb-1 -mb-1">
             <Tooltip title="Item Exchange">
               <button
                 onClick={() => setShowExchangeDialog(true)}
-                className="flex items-center justify-center w-12 h-12 rounded-xl bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-600 border border-gray-200 transition-all shadow-sm hover:shadow-md"
+                className="flex items-center justify-center w-12 h-12 rounded-xl bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-600 border border-gray-200 transition-all shadow-sm hover:shadow-md shrink-0"
               >
                 <IconArrowsExchange size={22} />
               </button>
@@ -120,15 +165,15 @@ export default function POSHero() {
             <Tooltip title="Invoices">
               <button
                 onClick={() => setShowInvoicesForm(true)}
-                className="flex items-center justify-center w-12 h-12 rounded-xl bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-600 border border-gray-200 transition-all shadow-sm hover:shadow-md"
+                className="flex items-center justify-center w-12 h-12 rounded-xl bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-600 border border-gray-200 transition-all shadow-sm hover:shadow-md shrink-0"
               >
                 <IconReceipt size={22} />
               </button>
             </Tooltip>
             <Tooltip title="Petty Cash">
               <button
-                onClick={() => setShowPettyCashDialog(true)}
-                className="flex items-center justify-center w-12 h-12 rounded-xl bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-600 border border-gray-200 transition-all shadow-sm hover:shadow-md"
+                onClick={handlePettyCashClick}
+                className="flex items-center justify-center w-12 h-12 rounded-xl bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-600 border border-gray-200 transition-all shadow-sm hover:shadow-md shrink-0"
               >
                 <IconCash size={22} />
               </button>
@@ -136,7 +181,7 @@ export default function POSHero() {
             <Tooltip title="Settings">
               <button
                 onClick={() => setShowSettingsDialog(true)}
-                className="flex items-center justify-center w-12 h-12 rounded-xl bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-600 border border-gray-200 transition-all shadow-sm hover:shadow-md"
+                className="flex items-center justify-center w-12 h-12 rounded-xl bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-600 border border-gray-200 transition-all shadow-sm hover:shadow-md shrink-0"
               >
                 <IconSettings size={22} />
               </button>
@@ -144,11 +189,23 @@ export default function POSHero() {
             <Tooltip title="Logout">
               <button
                 onClick={handleLogout}
-                className="flex items-center justify-center w-12 h-12 rounded-xl bg-red-50 hover:bg-red-600 text-red-500 hover:text-white border border-red-100 hover:border-red-600 transition-all shadow-sm hover:shadow-md"
+                className="flex items-center justify-center w-12 h-12 rounded-xl bg-red-50 hover:bg-red-600 text-red-500 hover:text-white border border-red-100 hover:border-red-600 transition-all shadow-sm hover:shadow-md shrink-0"
               >
                 <IconLogout size={22} />
               </button>
             </Tooltip>
+
+            {/* Spacer to push count to right on desktop */}
+            <div className="flex-1 min-w-0" />
+
+            {/* Today's Orders Count - compact number badge */}
+            {selectedStockId && (
+              <Tooltip title="Today's Orders">
+                <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 text-blue-800 font-black text-lg select-none shrink-0">
+                  {todayOrdersCount}
+                </div>
+              </Tooltip>
+            )}
           </div>
         </div>
 
@@ -201,6 +258,14 @@ export default function POSHero() {
       <POSPettyCashDialog
         open={showPettyCashDialog}
         onClose={() => setShowPettyCashDialog(false)}
+      />
+      <POSCredentialVerifyAndRequestAuthorizeForm
+        open={verifyOpen}
+        onCancel={handleVerifyCancel}
+        onSuccess={handleVerifySuccess}
+        title={verifyTitle}
+        description={verifyDescription}
+        requiredPermission={verifyPermission}
       />
     </>
   );

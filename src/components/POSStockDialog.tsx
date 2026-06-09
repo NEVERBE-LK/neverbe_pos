@@ -45,23 +45,7 @@ export default function POSStockDialog() {
   };
 
   const handleChange = (value: string) => {
-    const hasInitialSetup = typeof window !== "undefined" && !!window.localStorage.getItem("neverbePOSStockId");
-    if (hasInitialSetup) {
-      setPendingStockId(value);
-      closeStockDialog();
-      setVerifyOpen(true);
-    } else {
-      selectStock(value);
-    }
-  };
-
-  const handleVerifySuccess = () => {
-    if (pendingStockId) {
-      selectStock(pendingStockId);
-      toast.success("Location changed successfully");
-    }
-    setVerifyOpen(false);
-    setPendingStockId(null);
+    selectStock(value);
   };
 
   return (
@@ -140,19 +124,6 @@ export default function POSStockDialog() {
           </Button>
         </div>
       </Modal>
-
-      <POSCredentialVerifyAndRequestAuthorizeForm
-        open={verifyOpen}
-        onCancel={() => {
-          setVerifyOpen(false);
-          setPendingStockId(null);
-          openStockDialog();
-        }}
-        onSuccess={handleVerifySuccess}
-        title="Verify Location Change"
-        description="Changing stock location requires security clearance. Please enter your password."
-        requiredPermission="change_pos_location"
-      />
     </>
   );
 }
