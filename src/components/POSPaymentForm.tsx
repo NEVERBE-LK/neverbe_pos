@@ -51,58 +51,48 @@ export default function POSPaymentForm() {
     [itemsTotal, totalDiscount],
   );
 
+  const selectedMethod = useMemo(() => {
+    return paymentMethods.find(
+      (m) => m.name.toLowerCase() === selectedPaymentMethod.toLowerCase(),
+    );
+  }, [selectedPaymentMethod, paymentMethods]);
+
+  const hasCustomerFee = useMemo(() => {
+    return !!(selectedMethod && (selectedMethod.customerFee || 0) > 0);
+  }, [selectedMethod]);
+
   const customerFee = useMemo(() => {
-    return payments.reduce((acc, payment) => {
-      if (payment.paymentMethodId === "pm-006") {
-        const method = paymentMethods.find((m) => m.paymentId === "pm-006");
-        if (method && method.fee > 0) {
-          const feeMultiplier = 1 + (method.fee / 100) * 0.8;
-          const baseAmount = payment.amount / feeMultiplier;
-          const feeAmount = payment.amount - baseAmount;
-          return acc + Math.round(feeAmount * 100) / 100;
-        }
-      }
-      return acc;
+    const usedMethodIds = Array.from(new Set(payments.map((p) => p.paymentMethodId)));
+    return usedMethodIds.reduce((acc, methodId) => {
+      const method = paymentMethods.find((m) => m.paymentId === methodId);
+      return acc + (method?.customerFee || 0);
     }, 0);
   }, [payments, paymentMethods]);
 
-  const nonKokoPaymentsTotal = useMemo(() => {
-    return payments
-      .filter((p) => p.paymentMethodId !== "pm-006")
-      .reduce((acc, p) => acc + p.amount, 0);
-  }, [payments]);
+  const basePaid = useMemo(() => {
+    return payments.reduce((acc, p) => {
+      const method = paymentMethods.find((m) => m.paymentId === p.paymentMethodId);
+      const fee = method?.customerFee || 0;
+      return acc + (p.amount - fee);
+    }, 0);
+  }, [payments, paymentMethods]);
 
-  const pendingBaseAmount =
-    subtotal -
-    nonKokoPaymentsTotal -
-    payments
-      .filter((p) => p.paymentMethodId === "pm-006")
-      .reduce((acc, payment) => {
-        const method = paymentMethods.find((m) => m.paymentId === "pm-006");
-        if (method && method.fee > 0) {
-          const feeMultiplier = 1 + (method.fee / 100) * 0.8;
-          return acc + payment.amount / feeMultiplier;
-        }
-        return acc + payment.amount;
-      }, 0);
+  const pendingBaseAmount = useMemo(() => {
+    return Math.max(0, subtotal - basePaid);
+  }, [subtotal, basePaid]);
 
   const grandTotal = subtotal + customerFee;
   const pendingDue = grandTotal - paymentsTotal;
 
   const isKokoSelected = useMemo(() => {
-    const method = paymentMethods.find(
-      (m) => m.name.toLowerCase() === selectedPaymentMethod.toLowerCase(),
-    );
-    return method?.paymentId === "pm-006";
-  }, [selectedPaymentMethod, paymentMethods]);
+    return selectedMethod?.paymentId === "pm-006";
+  }, [selectedMethod]);
 
-  const kokoPreCalculatedAmount = useMemo(() => {
-    if (!isKokoSelected || pendingBaseAmount <= 0) return 0;
-    const method = paymentMethods.find((m) => m.paymentId === "pm-006");
-    if (!method || method.fee <= 0) return Math.max(0, pendingBaseAmount);
-    const feeMultiplier = 1 + (method.fee / 100) * 0.8;
-    return Math.round(pendingBaseAmount * feeMultiplier * 100) / 100;
-  }, [isKokoSelected, pendingBaseAmount, paymentMethods]);
+  const preCalculatedAmount = useMemo(() => {
+    if (!selectedMethod || pendingBaseAmount <= 0) return 0;
+    const fee = selectedMethod.customerFee || 0;
+    return Math.round((pendingBaseAmount + fee) * 100) / 100;
+  }, [selectedMethod, pendingBaseAmount]);
 
   const fetchPaymentMethods = async () => {
     try {
@@ -132,8 +122,8 @@ export default function POSPaymentForm() {
   }, [invoiceUrl]);
 
   const handleAddPayment = () => {
-    const amount = isKokoSelected
-      ? kokoPreCalculatedAmount
+    const amount = hasCustomerFee
+      ? preCalculatedAmount
       : parseFloat(paymentAmount);
 
     if (isNaN(amount) || amount <= 0) {
@@ -143,7 +133,7 @@ export default function POSPaymentForm() {
 
     if (
       selectedPaymentMethod !== "cash" &&
-      !isKokoSelected &&
+      !hasCustomerFee &&
       amount > pendingDue + 0.5
     ) {
       toast.error("Amount exceeds the due amount");
@@ -503,13 +493,13 @@ export default function POSPaymentForm() {
                 />
               </div>
 
-              {isKokoSelected ? (
+              {hasCustomerFee ? (
                 <div className="flex flex-col gap-1 px-3 py-2 bg-green-50 border border-green-200 rounded-xl">
                   <span className="text-[10px] font-bold text-green-600 uppercase">
                     Amount to Collect
                   </span>
                   <span className="font-extrabold text-green-700 leading-none">
-                    Rs. {kokoPreCalculatedAmount.toLocaleString()}
+                    Rs. {preCalculatedAmount.toLocaleString()}
                   </span>
                 </div>
               ) : (

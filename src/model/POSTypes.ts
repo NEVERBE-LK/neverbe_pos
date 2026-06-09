@@ -47,6 +47,7 @@ export interface POSPaymentMethod {
   name: string;
   status: string;
   fee: number;
+  customerFee?: number;
   available: string[];
   createdAt: string | Timestamp;
 }
