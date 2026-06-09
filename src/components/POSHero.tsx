@@ -25,6 +25,8 @@ export default function POSHero() {
     openStockDialog,
     searchProducts,
     loadProducts,
+    isOnline,
+    offlineQueue,
   } = usePOS();
 
   const currentStock = stocks?.find?.((s) => s.id === selectedStockId);
@@ -69,7 +71,6 @@ export default function POSHero() {
         {/* Top Header Row */}
         <div className="p-4 flex flex-col sm:flex-row justify-between items-center gap-4 bg-white rounded-2xl shadow-sm border border-gray-100">
           <div className="flex items-center gap-3 w-full sm:w-auto">
-            {/* Stock Selector */}
             <div
               className="flex items-center gap-2 px-5 h-12 rounded-xl bg-green-50 border border-green-100 cursor-pointer transition-all duration-200 hover:bg-green-600 hover:text-white group w-full sm:w-auto justify-center sm:justify-start"
               onClick={openStockDialog}
@@ -80,6 +81,16 @@ export default function POSHero() {
               <span className="text-sm font-extrabold uppercase text-green-900 group-hover:text-white truncate max-w-[200px]">
                 {currentStock?.label || currentStock?.name || "Select Stock"}
               </span>
+            </div>
+
+            {/* Connection Status Indicator */}
+            <div className={`flex items-center gap-2 px-4 h-12 rounded-xl border font-bold text-xs uppercase tracking-wide justify-center select-none ${
+              isOnline 
+                ? "bg-green-50 text-green-700 border-green-100" 
+                : "bg-amber-50 text-amber-700 border-amber-100 animate-pulse"
+            }`}>
+              <span className={`w-2.5 h-2.5 rounded-full ${isOnline ? "bg-green-500" : "bg-amber-500"}`} />
+              <span>{isOnline ? "Online" : `Offline (${offlineQueue?.length || 0})`}</span>
             </div>
           </div>
 

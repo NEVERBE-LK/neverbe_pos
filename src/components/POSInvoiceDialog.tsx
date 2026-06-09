@@ -47,18 +47,27 @@ export default function POSInvoiceDialog({
     setSearched(true);
     setInvoiceUrl(null);
     try {
-      const { data } = await api.get(`/api/v1/pos/orders/${searchQuery}`);
-
-      if (data && data.orderId) {
-        setInvoices([data]);
-      } else if (Array.isArray(data)) {
-        setInvoices(data);
+      if (navigator.onLine) {
+        const { data } = await api.get(`/api/v1/pos/orders/${searchQuery}`);
+        if (data && data.orderId) {
+          setInvoices([data]);
+        } else if (Array.isArray(data)) {
+          setInvoices(data);
+        } else {
+          setInvoices([]);
+        }
       } else {
-        setInvoices([]);
+        const queueStr = localStorage.getItem("neverbePOSOfflineQueue");
+        const queue = queueStr ? JSON.parse(queueStr) : [];
+        const matching = queue.filter((o: any) => o.orderId.toLowerCase().includes(searchQuery.toLowerCase()));
+        setInvoices(matching);
       }
     } catch (error) {
       console.error("Failed to search invoices:", error);
-      setInvoices([]);
+      const queueStr = localStorage.getItem("neverbePOSOfflineQueue");
+      const queue = queueStr ? JSON.parse(queueStr) : [];
+      const matching = queue.filter((o: any) => o.orderId.toLowerCase().includes(searchQuery.toLowerCase()));
+      setInvoices(matching);
     } finally {
       setLoading(false);
     }

@@ -24,7 +24,24 @@ export default function POSLoginPage() {
 
     setLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
+      
+      // Save password hash and role locally for offline admin verification
+      try {
+        const tokenResult = await user.getIdTokenResult();
+        const role = (tokenResult.claims.role as string || "").toLowerCase();
+        localStorage.setItem("neverbePOSUserRole", role);
+
+        const msgUint8 = new TextEncoder().encode(password);
+        const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const hashHex = hashArray.map(b => b.toString(16).padStart(2, "0")).join("");
+        localStorage.setItem("neverbePOSUserPassHash", hashHex);
+      } catch (hashError) {
+        console.error("Failed to hash password locally:", hashError);
+      }
+
       toast.success("Login successful!");
     } catch (error: any) {
       console.error("Login Error:", error);

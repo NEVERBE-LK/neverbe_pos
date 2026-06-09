@@ -49,7 +49,12 @@ export const POSAuthProvider = ({
 
           if (response.status === 200 && response.data) {
             // Update with enriched user details from our backend
-            setCurrentUser(response.data as User);
+            const userData = response.data as any;
+            setCurrentUser(userData);
+            
+            // Cache role and permissions in localStorage
+            localStorage.setItem("neverbePOSUserRole", (userData.role || "").toLowerCase());
+            localStorage.setItem("neverbePOSUserPermissions", JSON.stringify(userData.permissions || []));
           } else {
             console.error("Backend login rejected the user.");
             toast.error(

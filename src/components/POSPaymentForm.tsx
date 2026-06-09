@@ -19,6 +19,7 @@ export default function POSPaymentForm() {
     closePaymentDialog,
     loadCart,
     regenerateInvoiceId,
+    placePOSOrder,
   } = usePOS();
 
   const [payments, setPayments] = useState<POSPayment[]>([]);
@@ -95,14 +96,28 @@ export default function POSPaymentForm() {
   }, [selectedMethod, pendingBaseAmount]);
 
   const fetchPaymentMethods = async () => {
+    const cacheKey = "neverbePOSPaymentMethodsCache";
     try {
-      const { data } = await api.get("/api/v1/pos/payment-methods");
-      if (Array.isArray(data)) {
-        setPaymentMethods(data);
+      if (navigator.onLine) {
+        const { data } = await api.get("/api/v1/pos/payment-methods");
+        if (Array.isArray(data)) {
+          setPaymentMethods(data);
+          localStorage.setItem(cacheKey, JSON.stringify(data));
+        }
+      } else {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          setPaymentMethods(JSON.parse(cached));
+        }
       }
     } catch (error) {
       console.error("Failed to fetch payment methods:", error);
-      toast.error("Could not load payment methods");
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        setPaymentMethods(JSON.parse(cached));
+      } else {
+        toast.error("Could not load payment methods");
+      }
     }
   };
 
@@ -222,13 +237,14 @@ export default function POSPaymentForm() {
         transactionFeeCharge: Math.round(transactionFeeCharge * 100) / 100,
       };
 
-      const formData = new FormData();
-      formData.append("data", JSON.stringify(order));
-
-      const { data } = await api.post("/api/v1/pos/orders", formData);
+      const data = await placePOSOrder(order);
 
       if (data.order) {
-        toast.success("Order created successfully!");
+        if (data.isOffline) {
+          toast.success("Order saved offline. Will sync when back online!");
+        } else {
+          toast.success("Order created successfully!");
+        }
         setCompletedOrder(data.order);
       }
 

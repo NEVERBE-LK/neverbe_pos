@@ -75,14 +75,23 @@ export default function POSVariantDialog({
   const fetchInventory = async () => {
     if (!product || !selectedStockId) return;
     setLoading(true);
+    const cacheKey = `neverbePOSInventoryCache_${selectedStockId}_${product.id}`;
     try {
-      const { data } = await api.get("/api/v1/pos/inventory", {
-        params: { stockId: selectedStockId, productId: product.id },
-      });
-      setInventory(Array.isArray(data) ? data : []);
+      if (navigator.onLine) {
+        const { data } = await api.get("/api/v1/pos/inventory", {
+          params: { stockId: selectedStockId, productId: product.id },
+        });
+        const invData = Array.isArray(data) ? data : [];
+        setInventory(invData);
+        localStorage.setItem(cacheKey, JSON.stringify(invData));
+      } else {
+        const cached = localStorage.getItem(cacheKey);
+        setInventory(cached ? JSON.parse(cached) : []);
+      }
     } catch (error) {
       console.error("Failed to fetch inventory:", error);
-      setInventory([]);
+      const cached = localStorage.getItem(cacheKey);
+      setInventory(cached ? JSON.parse(cached) : []);
     } finally {
       setLoading(false);
     }

@@ -85,15 +85,31 @@ export default function POSExchangeDialog({
   const isRefundRequired = priceDifference < 0;
 
   useEffect(() => {
-    api
-      .get("/api/v1/pos/payment-methods")
-      .then(({ data }) => {
-        if (Array.isArray(data)) {
-          // Backend uses 'status' (boolean), frontend was inconsistently looking for 'isActive'
-          setPaymentMethods(data.filter((m: any) => m.status));
-        }
-      })
-      .catch((err) => console.error("Failed to load payment methods", err));
+    const cacheKey = "neverbePOSPaymentMethodsCache";
+    if (navigator.onLine) {
+      api
+        .get("/api/v1/pos/payment-methods")
+        .then(({ data }) => {
+          if (Array.isArray(data)) {
+            setPaymentMethods(data.filter((m: any) => m.status));
+            localStorage.setItem(cacheKey, JSON.stringify(data));
+          }
+        })
+        .catch((err) => {
+          console.error("Failed to load payment methods", err);
+          const cached = localStorage.getItem(cacheKey);
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            setPaymentMethods(parsed.filter((m: any) => m.status));
+          }
+        });
+    } else {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        setPaymentMethods(parsed.filter((m: any) => m.status));
+      }
+    }
   }, []);
 
   const handleSearchOrder = async () => {
@@ -134,13 +150,58 @@ export default function POSExchangeDialog({
     if (!searchQuery.trim() || !selectedStockId) return;
 
     setSearching(true);
+    const cacheKey = `neverbePOSCachedProducts_${selectedStockId}`;
     try {
-      const { data } = await api.get("/api/v1/pos/products", {
-        params: { stockId: selectedStockId, search: searchQuery },
-      });
-      setSearchResults(Array.isArray(data) ? data : []);
+      if (navigator.onLine) {
+        const { data } = await api.get("/api/v1/pos/products", {
+          params: { stockId: selectedStockId, search: searchQuery },
+        });
+        setSearchResults(Array.isArray(data) ? data : []);
+      } else {
+        const cached = localStorage.getItem(cacheKey);
+        if (cached) {
+          const allProducts: any[] = JSON.parse(cached);
+          const q = searchQuery.toLowerCase();
+          const filtered = allProducts.filter(p => {
+            const nameMatch = p.name?.toLowerCase().includes(q);
+            const skuMatch = p.sku?.toLowerCase().includes(q);
+            const brandMatch = p.brand?.toLowerCase().includes(q);
+            const categoryMatch = p.category?.toLowerCase().includes(q);
+            const variantMatch = p.variants?.some((v: any) =>
+              v.name?.toLowerCase().includes(q) ||
+              v.variantName?.toLowerCase().includes(q) ||
+              v.color?.toLowerCase().includes(q) ||
+              v.id?.toLowerCase().includes(q) ||
+              v.variantId?.toLowerCase().includes(q)
+            );
+            return nameMatch || skuMatch || brandMatch || categoryMatch || variantMatch;
+          });
+          setSearchResults(filtered);
+        }
+      }
     } catch {
-      toast.error("Product search failed");
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        const allProducts: any[] = JSON.parse(cached);
+        const q = searchQuery.toLowerCase();
+        const filtered = allProducts.filter(p => {
+          const nameMatch = p.name?.toLowerCase().includes(q);
+          const skuMatch = p.sku?.toLowerCase().includes(q);
+          const brandMatch = p.brand?.toLowerCase().includes(q);
+          const categoryMatch = p.category?.toLowerCase().includes(q);
+          const variantMatch = p.variants?.some((v: any) =>
+            v.name?.toLowerCase().includes(q) ||
+            v.variantName?.toLowerCase().includes(q) ||
+            v.color?.toLowerCase().includes(q) ||
+            v.id?.toLowerCase().includes(q) ||
+            v.variantId?.toLowerCase().includes(q)
+          );
+          return nameMatch || skuMatch || brandMatch || categoryMatch || variantMatch;
+        });
+        setSearchResults(filtered);
+      } else {
+        toast.error("Product search failed");
+      }
     } finally {
       setSearching(false);
     }
