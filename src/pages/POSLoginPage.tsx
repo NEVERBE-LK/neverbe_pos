@@ -53,33 +53,40 @@ export default function POSLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-50 flex items-center justify-center p-4 relative overflow-hidden font-['Inter', sans-serif]">
-      {/* Subtle Background Decorations */}
-      <div className="absolute top-[-5%] left-[-5%] w-[30%] h-[30%] bg-green-100/50 rounded-full blur-[100px]" />
-      <div className="absolute bottom-[-5%] right-[-5%] w-[30%] h-[30%] bg-green-50/50 rounded-full blur-[100px]" />
+    <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 relative overflow-hidden font-['Inter', sans-serif]">
+      {/* Decorative Subtle Light Glows */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-emerald-100/60 rounded-full blur-[120px]" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-green-50/60 rounded-full blur-[120px]" />
 
-      <div className="w-full max-w-[420px] z-10">
-        <div className="text-center mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-3xl border border-zinc-200 mb-6 shadow-sm group hover:scale-105 transition-transform duration-500">
+      <div className="w-full max-w-[440px] z-10">
+        <div className="text-center mb-8">
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-white rounded-3xl border border-slate-200/80 mb-6 shadow-sm group hover:scale-105 transition-transform duration-500">
             <img
               src="/logo.png"
               alt="Logo"
-              className="w-12 h-12 object-contain group-hover:drop-shadow-[0_0_8px_rgba(34,197,94,0.3)] transition-all"
+              className="w-14 h-14 object-contain group-hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.2)] transition-all"
             />
           </div>
-          <h1 className="text-3xl font-black text-zinc-900 tracking-tight mb-2">
+          <h1 className="text-3xl font-black text-slate-900 tracking-tight mb-2">
             POS Terminal
           </h1>
+          <p className="text-slate-500 text-sm font-medium">
+            Sign in to access your point of sale session
+          </p>
         </div>
 
         <Card
-          className="bg-white/70 border-zinc-200/50 backdrop-blur-xl shadow-[0_32px_64px_-12px_rgba(0,0,0,0.08)] rounded-[32px] overflow-hidden animate-in fade-in zoom-in duration-500"
-          bodyStyle={{ padding: "40px" }}
+          className="bg-white/80 border-slate-200/60 backdrop-blur-xl shadow-[0_24px_50px_-12px_rgba(0,0,0,0.06)] rounded-[32px] overflow-hidden"
+          styles={{
+            body: {
+              padding: "40px 32px 32px 32px",
+            }
+          }}
         >
-          <form className="space-y-6" onSubmit={handleLogin}>
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-[0.2em] ml-1">
-                Email
+          <form className="space-y-5" onSubmit={handleLogin}>
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">
+                Email Address
               </label>
               <Input
                 size="large"
@@ -87,14 +94,14 @@ export default function POSLoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                prefix={<IconMail size={20} className="text-zinc-400" />}
-                className="h-14 rounded-2xl border-zinc-200 bg-zinc-50/50 text-zinc-900 placeholder:text-zinc-300 focus:border-green-500/50 focus:bg-white transition-all text-base font-medium"
-                placeholder="operator@neverbe.com"
+                prefix={<IconMail size={18} className="text-slate-400" />}
+                className="h-13 rounded-xl border-slate-200 bg-slate-50/50 text-slate-800 placeholder:text-slate-300 focus:border-emerald-500/50 focus:bg-white transition-all text-base font-medium"
+                placeholder="pos@neverbe.com"
               />
             </div>
 
-            <div className="space-y-2">
-              <label className="text-[11px] font-bold text-zinc-400 uppercase tracking-[0.2em] ml-1">
+            <div className="space-y-1.5">
+              <label className="text-[10px] font-bold text-slate-400 uppercase tracking-[0.2em] ml-1">
                 Password
               </label>
               <Input.Password
@@ -102,43 +109,43 @@ export default function POSLoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                prefix={<IconLock size={20} className="text-zinc-400" />}
-                className="h-14 rounded-2xl border-zinc-200 bg-zinc-50/50 text-zinc-900 placeholder:text-zinc-300 focus:border-green-500/50 focus:bg-white transition-all text-base font-medium"
+                prefix={<IconLock size={18} className="text-slate-400" />}
+                className="h-13 rounded-xl border-slate-200 bg-slate-50/50 text-slate-800 placeholder:text-slate-300 focus:border-emerald-500/50 focus:bg-white transition-all text-base font-medium"
                 placeholder="••••••••"
               />
             </div>
 
-            <div className="pt-4">
+            <div className="pt-3">
               <Button
                 type="primary"
                 htmlType="submit"
                 loading={loading}
                 block
-                className="h-14 rounded-2xl bg-green-600 hover:bg-green-700 text-white text-base font-bold uppercase tracking-wider border-none shadow-[0_8px_20px_-4px_rgba(22,163,74,0.3)] transition-all hover:scale-[1.02] active:scale-[0.98]"
+                className="h-13 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold uppercase tracking-wider border-none shadow-[0_6px_16px_-4px_rgba(16,185,129,0.3)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
               >
-                {loading ? "Authenticating..." : "Login"}
+                {loading ? "Authenticating..." : "Sign In"}
               </Button>
             </div>
           </form>
 
-          <Divider className="my-6">
-            <span className="text-zinc-400 text-[10px] font-bold uppercase tracking-[0.2em]">
+          <Divider className="my-5 border-slate-100">
+            <span className="text-slate-400 text-[9px] font-bold uppercase tracking-[0.25em]">
               Or Continue With
             </span>
           </Divider>
 
           <Button
-            className="w-full h-14 rounded-2xl flex items-center justify-center gap-3 border-zinc-200 hover:border-zinc-300 hover:bg-zinc-50 transition-all font-medium text-base text-zinc-600 bg-white"
+            className="w-full h-13 rounded-xl flex items-center justify-center gap-3 border-slate-200 hover:border-slate-300 hover:bg-slate-50/80 transition-all font-semibold text-sm text-slate-600 bg-white"
             onClick={handleGoogleLogin}
             disabled={loading}
           >
-            <FcGoogle size={24} />
+            <FcGoogle size={20} />
             <span>Google Account</span>
           </Button>
         </Card>
 
-        <p className="text-center mt-10 text-zinc-400 text-sm font-medium tracking-wide">
-          &copy; 2026 NEVERBE
+        <p className="text-center mt-8 text-slate-400 text-xs font-semibold tracking-wider uppercase">
+          &copy; 2026 NEVERBE SYSTEM
         </p>
       </div>
     </div>

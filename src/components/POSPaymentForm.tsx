@@ -555,7 +555,7 @@ export default function POSPaymentForm() {
               {customerFee > 0 && (
                 <div className="flex justify-between mb-1 p-2 bg-green-50 border border-dashed border-green-200 -mx-1">
                   <span className="text-sm text-green-700 uppercase font-bold">
-                    Processing Fee:
+                    Customer Fee:
                   </span>
                   <span className="text-sm font-extrabold text-green-700">
                     Rs. {customerFee.toLocaleString()}
