@@ -116,6 +116,7 @@ export default function POSCredentialVerifyAndRequestAuthorizeForm({
       footer={null}
       width={400}
       title={null}
+      zIndex={3000}
       className="[&_.ant-modal-content]:!rounded-3xl [&_.ant-modal-content]:!p-0 overflow-hidden"
     >
       <div className="border-b border-gray-100 bg-gray-50/50 p-6">

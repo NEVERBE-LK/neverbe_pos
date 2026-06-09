@@ -16,6 +16,7 @@ export default function POSStockDialog() {
     selectStock,
     loadProducts,
     closeStockDialog,
+    openStockDialog,
   } = usePOS();
 
   const [verifyOpen, setVerifyOpen] = useState(false);
@@ -47,6 +48,7 @@ export default function POSStockDialog() {
     const hasInitialSetup = typeof window !== "undefined" && !!window.localStorage.getItem("neverbePOSStockId");
     if (hasInitialSetup) {
       setPendingStockId(value);
+      closeStockDialog();
       setVerifyOpen(true);
     } else {
       selectStock(value);
@@ -144,6 +146,7 @@ export default function POSStockDialog() {
         onCancel={() => {
           setVerifyOpen(false);
           setPendingStockId(null);
+          openStockDialog();
         }}
         onSuccess={handleVerifySuccess}
         title="Verify Location Change"

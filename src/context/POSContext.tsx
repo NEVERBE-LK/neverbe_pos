@@ -30,6 +30,7 @@ interface POSState {
   previewOrder: POSOrder | null;
   isOnline: boolean;
   offlineQueue: any[];
+  todayOrdersCount: number;
 }
 
 // ================================
@@ -50,7 +51,8 @@ type POSAction =
   | { type: "SET_PRODUCTS"; payload: POSProduct[] }
   | { type: "SET_PRODUCTS_LOADING"; payload: boolean }
   | { type: "SET_ONLINE"; payload: boolean }
-  | { type: "SET_OFFLINE_QUEUE"; payload: any[] };
+  | { type: "SET_OFFLINE_QUEUE"; payload: any[] }
+  | { type: "SET_TODAY_ORDERS_COUNT"; payload: number };
 
 // ================================
 // Context Interface
@@ -71,6 +73,7 @@ interface POSContextType extends POSState {
   setPreview: (order: POSOrder | null) => void;
   closePreview: () => void;
   placePOSOrder: (order: any) => Promise<any>;
+  fetchTodayOrdersCount: (stockId: string) => Promise<void>;
 }
 
 // ================================
@@ -91,6 +94,7 @@ const initialState: POSState = {
   previewOrder: null,
   isOnline: true,
   offlineQueue: [],
+  todayOrdersCount: 0,
 };
 
 // ================================
@@ -128,6 +132,8 @@ const posReducer = (state: POSState, action: POSAction): POSState => {
       return { ...state, isOnline: action.payload };
     case "SET_OFFLINE_QUEUE":
       return { ...state, offlineQueue: action.payload };
+    case "SET_TODAY_ORDERS_COUNT":
+      return { ...state, todayOrdersCount: action.payload };
     default:
       return state;
   }
@@ -363,6 +369,27 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
     [state.selectedStockId],
   );
 
+  const fetchTodayOrdersCount = useCallback(async (stockId: string) => {
+    if (!stockId) return;
+    try {
+      if (navigator.onLine && auth.currentUser) {
+        const { data } = await api.get("/api/v1/pos/orders/today-count", {
+          params: { stockId },
+        });
+        const count = typeof data.count === "number" ? data.count : 0;
+        dispatch({ type: "SET_TODAY_ORDERS_COUNT", payload: count });
+        localStorage.setItem(`neverbePOSTodayOrdersCount_${stockId}`, String(count));
+      } else {
+        const cached = localStorage.getItem(`neverbePOSTodayOrdersCount_${stockId}`);
+        dispatch({ type: "SET_TODAY_ORDERS_COUNT", payload: cached ? Number(cached) : 0 });
+      }
+    } catch (error) {
+      console.error("Fetch Today Orders Count Error:", error);
+      const cached = localStorage.getItem(`neverbePOSTodayOrdersCount_${stockId}`);
+      dispatch({ type: "SET_TODAY_ORDERS_COUNT", payload: cached ? Number(cached) : 0 });
+    }
+  }, []);
+
   const selectStock = useCallback((stockId: string) => {
     dispatch({ type: "SET_SELECTED_STOCK_ID", payload: stockId });
     localStorage.setItem("neverbePOSStockId", stockId);
@@ -370,7 +397,8 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
     dispatch({ type: "SET_PRODUCTS", payload: [] });
     loadProducts(stockId);
     loadCart(stockId);
-  }, [loadProducts, loadCart]);
+    fetchTodayOrdersCount(stockId);
+  }, [loadProducts, loadCart, fetchTodayOrdersCount]);
 
   const regenerateInvoiceId = useCallback(() => {
     const newId = generateInvoiceId();
@@ -410,10 +438,13 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
 
     if (successCount > 0) {
       toast.success(`Successfully synced ${successCount} offline orders!`, { id: toastId });
+      if (state.selectedStockId) {
+        fetchTodayOrdersCount(state.selectedStockId);
+      }
     } else {
       toast.dismiss(toastId);
     }
-  }, []);
+  }, [state.selectedStockId, fetchTodayOrdersCount]);
 
   const placePOSOrder = useCallback(
     async (order: any) => {
@@ -421,6 +452,9 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
         const formData = new FormData();
         formData.append("data", JSON.stringify(order));
         const { data } = await api.post("/api/v1/pos/orders", formData);
+        if (state.selectedStockId) {
+          fetchTodayOrdersCount(state.selectedStockId);
+        }
         return data;
       } else {
         // Save to offline sync queue
@@ -429,6 +463,13 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
         queue.push(order);
         localStorage.setItem("neverbePOSOfflineQueue", JSON.stringify(queue));
         dispatch({ type: "SET_OFFLINE_QUEUE", payload: queue });
+
+        // Increment offline count immediately
+        const nextCount = state.todayOrdersCount + 1;
+        dispatch({ type: "SET_TODAY_ORDERS_COUNT", payload: nextCount });
+        if (state.selectedStockId) {
+          localStorage.setItem(`neverbePOSTodayOrdersCount_${state.selectedStockId}`, String(nextCount));
+        }
 
         // Decrement local inventory size/variant caches immediately
         const targetStockId = state.selectedStockId;
@@ -520,6 +561,7 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
           dispatch({ type: "SET_SELECTED_STOCK_ID", payload: stockId });
           loadProducts(stockId);
           loadCart(stockId);
+          fetchTodayOrdersCount(stockId);
         } else {
           dispatch({ type: "SET_SHOW_STOCK_DIALOG", payload: true });
         }
@@ -538,7 +580,7 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
       window.removeEventListener("online", handleOnline);
       window.removeEventListener("offline", handleOffline);
     };
-  }, [loadStocks, loadProducts, loadCart, syncOfflineQueue]);
+  }, [loadStocks, loadProducts, loadCart, syncOfflineQueue, fetchTodayOrdersCount]);
 
   // UI Actions
   const openPaymentDialog = useCallback(
@@ -585,6 +627,7 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
         setPreview,
         closePreview,
         placePOSOrder,
+        fetchTodayOrdersCount,
       }}
     >
       {children}

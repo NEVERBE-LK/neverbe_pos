@@ -27,6 +27,7 @@ export default function POSHero() {
     loadProducts,
     isOnline,
     offlineQueue,
+    todayOrdersCount,
   } = usePOS();
 
   const currentStock = stocks?.find?.((s) => s.id === selectedStockId);
@@ -92,6 +93,18 @@ export default function POSHero() {
               <span className={`w-2.5 h-2.5 rounded-full ${isOnline ? "bg-green-500" : "bg-amber-500"}`} />
               <span>{isOnline ? "Online" : `Offline (${offlineQueue?.length || 0})`}</span>
             </div>
+
+            {/* Today's Orders Count Badge */}
+            {selectedStockId && (
+              <div className="flex items-center gap-2 px-4 h-12 rounded-xl bg-blue-50 border border-blue-100 text-blue-700 font-bold text-xs uppercase tracking-wide justify-center select-none">
+                <span className="text-xs font-bold uppercase tracking-wide text-blue-600">
+                  Today's Orders:
+                </span>
+                <span className="text-sm font-extrabold text-blue-900">
+                  {todayOrdersCount}
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Quick Actions (Right side) */}
