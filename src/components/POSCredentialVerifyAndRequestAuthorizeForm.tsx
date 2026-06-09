@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Modal, Input, Button } from "antd";
-import { IconLock } from "@tabler/icons-react";
-import { EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
+import { IconLock, IconMail } from "@tabler/icons-react";
 import { auth } from "@/firebase/firebaseClient";
+import { initializeApp, getApp, getApps, deleteApp } from "firebase/app";
+import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
+import api from "@/lib/api";
 import toast from "react-hot-toast";
 
 interface POSCredentialVerifyAndRequestAuthorizeFormProps {
@@ -13,6 +15,18 @@ interface POSCredentialVerifyAndRequestAuthorizeFormProps {
   description?: string;
   requiredPermission?: string;
 }
+
+// Config for secondary firebase app, aligned with firebaseClient.ts configuration
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
+  databaseURL: import.meta.env.VITE_FIREBASE_DATABASE_URL,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID,
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+};
 
 async function hashPassword(password: string): Promise<string> {
   const msgUint8 = new TextEncoder().encode(password);
@@ -27,52 +41,67 @@ export default function POSCredentialVerifyAndRequestAuthorizeForm({
   onCancel,
   onSuccess,
   title = "Verify Admin Credentials",
-  description = "Please enter your password to authorize this action.",
+  description = "Please enter admin/authorized user credentials to authorize this action.",
   requiredPermission,
 }: POSCredentialVerifyAndRequestAuthorizeFormProps) {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
 
+  // Clear fields when modal opens
+  useEffect(() => {
+    if (open) {
+      setEmail("");
+      setPassword("");
+    }
+  }, [open]);
+
   const handleVerify = async () => {
+    if (!email) {
+      toast.error("Please enter email address");
+      return;
+    }
     if (!password) {
-      toast.error("Please enter your password");
+      toast.error("Please enter password");
       return;
     }
 
     setLoading(true);
+    let secondaryApp;
     try {
-      const user = auth.currentUser;
       const isOnline = navigator.onLine;
 
-      if (isOnline && user && user.email) {
-        // Online: verify with Firebase Auth
-        const credential = EmailAuthProvider.credential(user.email, password);
-        await reauthenticateWithCredential(user, credential);
-        
-        // Retrieve custom claims to verify the role
-        const tokenResult = await user.getIdTokenResult(true);
-        const role = (tokenResult.claims.role as string || "").toLowerCase();
-        
-        // Retrieve permissions
-        const cachedPermsRaw = localStorage.getItem("neverbePOSUserPermissions");
-        const permissions: string[] = cachedPermsRaw ? JSON.parse(cachedPermsRaw) : [];
-        
-        const hasPermission = role === "admin" || (requiredPermission ? permissions.includes(requiredPermission) : false);
-        
-        if (role !== "admin" && requiredPermission && !hasPermission) {
-          throw new Error(`Unauthorized: You lack the required permission '${requiredPermission}' to authorize this action.`);
+      if (isOnline) {
+        // Initialize a secondary Firebase client instance
+        // This allows us to authenticate the supervisor's credentials without logging out the primary session
+        const appName = `verify-app-${Date.now()}`;
+        secondaryApp = initializeApp(firebaseConfig, appName);
+        const secondaryAuth = getAuth(secondaryApp);
+
+        // Sign in via secondary instance to obtain verification token
+        const userCredential = await signInWithEmailAndPassword(secondaryAuth, email, password);
+        const token = await userCredential.user.getIdToken();
+
+        // Send token to the backend API which verifies it using Firebase Admin SDK
+        const response = await api.post("/api/v1/pos/auth/verify", {
+          token,
+          requiredPermission,
+        });
+
+        if (response.data && response.data.success) {
+          toast.success("Verification successful!");
+          setPassword("");
+          onSuccess();
+        } else {
+          throw new Error(response.data?.message || "Verification failed");
         }
-        
-        // Update local hash cache for future offline verification
-        const hashHex = await hashPassword(password);
-        localStorage.setItem("neverbePOSUserPassHash", hashHex);
-        localStorage.setItem("neverbePOSUserRole", role);
-        
-        toast.success("Verification successful!");
-        setPassword("");
-        onSuccess();
       } else {
-        // Offline: verify against local SHA-256 hash and cached role/permissions
+        // Offline: fallback to local SHA-256 hash check of current logged-in user if email matches
+        const currentUserEmail = auth.currentUser?.email || "";
+        if (email.toLowerCase() !== currentUserEmail.toLowerCase()) {
+          throw new Error("Offline authorization only supports the current logged-in user.");
+        }
+
         const cachedHash = localStorage.getItem("neverbePOSUserPassHash");
         const cachedRole = localStorage.getItem("neverbePOSUserRole") || "";
         const cachedPermsRaw = localStorage.getItem("neverbePOSUserPermissions");
@@ -100,8 +129,16 @@ export default function POSCredentialVerifyAndRequestAuthorizeForm({
       }
     } catch (error: any) {
       console.error("Verification failed:", error);
-      toast.error(error.message || "Incorrect password. Verification failed.");
+      const friendlyMsg = error.response?.data?.message || error.message || "Verification failed.";
+      toast.error(friendlyMsg);
     } finally {
+      if (secondaryApp) {
+        try {
+          await deleteApp(secondaryApp);
+        } catch (e) {
+          console.error("Failed to delete secondary app instance:", e);
+        }
+      }
       setLoading(false);
     }
   };
@@ -142,7 +179,22 @@ export default function POSCredentialVerifyAndRequestAuthorizeForm({
 
         <div className="space-y-1.5">
           <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
-            Your Password
+            Email Address
+          </label>
+          <Input
+            size="large"
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            placeholder="admin@neverbe.com"
+            prefix={<IconMail size={18} className="text-gray-400 mr-2" />}
+            className="h-12 rounded-xl border-gray-200"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+            Password
           </label>
           <Input.Password
             size="large"
