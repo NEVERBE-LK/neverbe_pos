@@ -195,17 +195,6 @@ export default function POSHero() {
               </button>
             </Tooltip>
 
-            {/* Spacer to push count to right on desktop */}
-            <div className="flex-1 min-w-0" />
-
-            {/* Today's Orders Count - compact number badge */}
-            {selectedStockId && (
-              <Tooltip title="Today's Orders">
-                <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-blue-50 border border-blue-100 text-blue-800 font-black text-lg select-none shrink-0">
-                  {todayOrdersCount}
-                </div>
-              </Tooltip>
-            )}
           </div>
         </div>
 

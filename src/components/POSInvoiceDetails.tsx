@@ -11,6 +11,7 @@ export default function POSInvoiceDetails() {
     isInvoiceLoading,
     removeItemFromCart,
     openPaymentDialog,
+    todayOrdersCount,
   } = usePOS();
 
   // Track in-flight removal requests to prevent double-clicks
@@ -65,6 +66,11 @@ export default function POSInvoiceDetails() {
           <h2 className="text-base lg:text-xl font-extrabold uppercase tracking-widest leading-tight">
             Current Order
           </h2>
+          {todayOrdersCount !== undefined && (
+            <span className="bg-blue-50 text-blue-800 text-xs font-black px-2.5 py-0.5 rounded-lg shrink-0 select-none shadow-sm">
+              {todayOrdersCount}
+            </span>
+          )}
         </div>
         <span className="bg-white/20 text-white px-2 py-1 lg:px-3 lg:py-1.5 rounded-lg lg:rounded-xl font-bold font-mono text-[10px] lg:text-sm backdrop-blur-md border border-white/10 shrink-0">
           #{invoiceId || "------"}
