@@ -161,8 +161,16 @@ export default function POSLoginPage() {
           </Button>
         </Card>
 
-        <p className="text-center mt-8 text-slate-400 text-xs font-semibold tracking-wider uppercase">
-          &copy; 2026 NEVERBE SYSTEM
+        <p className="text-center mt-8 text-slate-400 text-[10px] font-bold tracking-widest uppercase">
+          &copy; {new Date().getFullYear()} Developed by{" "}
+          <a
+            href="https://vx9studio.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-slate-400 hover:text-black transition-colors underline"
+          >
+            VX9Studio
+          </a>
         </p>
       </div>
     </div>
