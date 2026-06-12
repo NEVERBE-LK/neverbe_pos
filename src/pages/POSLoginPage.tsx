@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
 import { auth } from "@/firebase/firebaseClient";
-import { Button, Input, Card, Divider } from "antd";
+import { Button, Input } from "antd";
 import { IconMail, IconLock } from "@tabler/icons-react";
 import { FcGoogle } from "react-icons/fc";
 import toast from "react-hot-toast";
@@ -27,7 +27,6 @@ export default function POSLoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
       
-      // Save password hash and role locally for offline admin verification
       try {
         const tokenResult = await user.getIdTokenResult();
         const role = (tokenResult.claims.role as string || "").toLowerCase();
@@ -70,40 +69,68 @@ export default function POSLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4 relative overflow-hidden font-['Inter', sans-serif]">
-      {/* Decorative Brand Glows */}
-      <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] bg-emerald-900/10 rounded-full blur-[140px] pointer-events-none" />
-      <div className="absolute bottom-[-20%] right-[-20%] w-[60%] h-[60%] bg-zinc-800/10 rounded-full blur-[140px] pointer-events-none" />
+    <div className="min-h-screen bg-[#07090e] flex items-center justify-center p-6 relative overflow-hidden font-['Inter', sans-serif]">
+      {/* Dynamic Animated Ambient Background Glows */}
+      <style>{`
+        @keyframes float-slow {
+          0%, 100% { transform: translate(0px, 0px) scale(1); }
+          33% { transform: translate(30px, -50px) scale(1.1); }
+          66% { transform: translate(-20px, 20px) scale(0.95); }
+        }
+        @keyframes float-reverse {
+          0%, 100% { transform: translate(0px, 0px) scale(1.05); }
+          50% { transform: translate(-40px, 40px) scale(0.95); }
+        }
+        .animate-float-1 {
+          animation: float-slow 15s ease-in-out infinite;
+        }
+        .animate-float-2 {
+          animation: float-reverse 18s ease-in-out infinite;
+        }
+        .premium-input .ant-input-prefix {
+          color: #6b7280 !important;
+          margin-right: 10px !important;
+        }
+        .premium-input input {
+          color: #fff !important;
+        }
+        .premium-input input::placeholder {
+          color: #4b5563 !important;
+        }
+      `}</style>
 
-      <div className="w-full max-w-[440px] z-10 animate-in fade-in zoom-in-95 duration-500">
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-24 h-24 bg-zinc-900 border border-zinc-800 rounded-3xl mb-6 shadow-2xl group hover:scale-[1.03] transition-all duration-300">
-            <img
-              src="/logo.png"
-              alt="Logo"
-              className="w-14 h-14 object-contain group-hover:drop-shadow-[0_0_12px_rgba(16,185,129,0.3)] transition-all duration-300"
-            />
+      {/* Floating Blobs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-emerald-500/[0.04] rounded-full blur-[120px] pointer-events-none animate-float-1" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-teal-500/[0.04] rounded-full blur-[120px] pointer-events-none animate-float-2" />
+      <div className="absolute top-[40%] left-[30%] w-[300px] h-[300px] bg-emerald-600/[0.02] rounded-full blur-[90px] pointer-events-none" />
+
+      <div className="w-full max-w-[440px] z-10">
+        {/* Main Glassmorphic Login Card */}
+        <div className="bg-white/[0.02] border border-white/[0.06] backdrop-blur-3xl shadow-[0_32px_64px_rgba(0,0,0,0.6)] rounded-[32px] p-8 md:p-10 relative overflow-hidden">
+          {/* Subtle top card accent line */}
+          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
+
+          {/* Logo Badge */}
+          <div className="text-center mb-8">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-white/[0.02] border border-white/[0.08] rounded-2xl mb-4 shadow-2xl group hover:border-emerald-500/30 transition-all duration-500">
+              <img
+                src="/logo.png"
+                alt="NEVERBE Logo"
+                className="w-12 h-12 object-contain group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+            <h1 className="text-xl font-black text-white tracking-[0.2em] uppercase mb-1">
+              NEVERBE
+            </h1>
+            <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">
+              POS Terminal Login
+            </p>
           </div>
-          <h1 className="text-3xl font-black text-white tracking-tight mb-2">
-            POS Terminal
-          </h1>
-          <p className="text-zinc-400 text-sm font-medium">
-            Sign in to access your point of sale session
-          </p>
-        </div>
 
-        <Card
-          className="bg-zinc-900/40 border-zinc-800/60 backdrop-blur-2xl shadow-[0_32px_64px_-16px_rgba(0,0,0,0.5)] rounded-[32px] overflow-hidden"
-          styles={{
-            body: {
-              padding: "40px 32px 32px 32px",
-            }
-          }}
-        >
-          <form className="space-y-5" onSubmit={handleLogin}>
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] ml-1">
-                Email Address
+          <form className="space-y-6" onSubmit={handleLogin}>
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">
+                Username / Email
               </label>
               <Input
                 size="large"
@@ -111,14 +138,19 @@ export default function POSLoginPage() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                prefix={<IconMail size={18} className="text-zinc-500 mr-1" />}
-                className="h-13 rounded-xl text-zinc-100 placeholder:text-zinc-600 transition-all text-base font-medium [&_.ant-input]:!bg-transparent [&_.ant-input]:!text-zinc-100 [&_.ant-input-password-icon]:!text-zinc-400 [&_.ant-input-affix-wrapper]:!bg-zinc-950/40 [&_.ant-input-affix-wrapper]:!border-zinc-800 [&_.ant-input-affix-wrapper-focused]:!border-zinc-700 [&_.ant-input-affix-wrapper-focused]:!bg-zinc-950/70 [&_.ant-input-affix-wrapper]:hover:!border-zinc-700"
+                prefix={<IconMail size={18} />}
                 placeholder="pos@neverbe.com"
+                className="premium-input h-13 bg-white/[0.02] border-white/[0.08] hover:border-white/[0.15] focus:border-emerald-500 focus:bg-white/[0.04] transition-all rounded-xl text-base"
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.02)",
+                  borderColor: "rgba(255, 255, 255, 0.08)",
+                  borderRadius: "12px",
+                }}
               />
             </div>
 
-            <div className="space-y-1.5">
-              <label className="text-[10px] font-bold text-zinc-400 uppercase tracking-[0.2em] ml-1">
+            <div className="space-y-2">
+              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">
                 Password
               </label>
               <Input.Password
@@ -126,48 +158,62 @@ export default function POSLoginPage() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                prefix={<IconLock size={18} className="text-zinc-500 mr-1" />}
-                className="h-13 rounded-xl text-zinc-100 placeholder:text-zinc-600 transition-all text-base font-medium [&_.ant-input]:!bg-transparent [&_.ant-input]:!text-zinc-100 [&_.ant-input-password-icon]:!text-zinc-400 [&_.ant-input-affix-wrapper]:!bg-zinc-950/40 [&_.ant-input-affix-wrapper]:!border-zinc-800 [&_.ant-input-affix-wrapper-focused]:!border-zinc-700 [&_.ant-input-affix-wrapper-focused]:!bg-zinc-950/70 [&_.ant-input-affix-wrapper]:hover:!border-zinc-700"
+                prefix={<IconLock size={18} />}
                 placeholder="••••••••"
+                className="premium-input h-13 bg-white/[0.02] border-white/[0.08] hover:border-white/[0.15] focus:border-emerald-500 focus:bg-white/[0.04] transition-all rounded-xl text-base"
+                style={{
+                  backgroundColor: "rgba(255, 255, 255, 0.02)",
+                  borderColor: "rgba(255, 255, 255, 0.08)",
+                  borderRadius: "12px",
+                }}
               />
             </div>
 
-            <div className="pt-3">
+            <div className="pt-2">
               <Button
                 type="primary"
                 htmlType="submit"
                 loading={loading}
                 block
-                className="h-13 rounded-xl bg-white hover:bg-zinc-200 text-black text-sm font-extrabold uppercase tracking-wider border-none shadow-[0_6px_20px_-4px_rgba(255,255,255,0.1)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
+                className="h-13 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black text-xs font-black uppercase tracking-widest border-none shadow-[0_8px_30px_rgba(16,185,129,0.2)] hover:shadow-[0_8px_40px_rgba(16,185,129,0.35)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
               >
-                {loading ? "Authenticating..." : "Sign In"}
+                {loading ? "AUTHENTICATING..." : "SIGN IN"}
               </Button>
             </div>
           </form>
 
-          <Divider className="my-5 border-zinc-800/80">
-            <span className="text-zinc-500 text-[9px] font-bold uppercase tracking-[0.25em]">
-              Or Continue With
+          <div className="relative flex py-4 items-center my-4">
+            <div className="flex-grow border-t border-white/[0.05]"></div>
+            <span className="flex-shrink mx-4 text-zinc-600 text-[9px] font-extrabold uppercase tracking-[0.25em]">
+              OR SIGN IN WITH
             </span>
-          </Divider>
+            <div className="flex-grow border-t border-white/[0.05]"></div>
+          </div>
 
           <Button
-            className="w-full h-13 rounded-xl flex items-center justify-center gap-3 border-zinc-800 hover:border-zinc-700 hover:bg-zinc-900/85 transition-all font-semibold text-sm text-zinc-300 bg-zinc-950/30"
+            className="w-full h-13 rounded-xl flex items-center justify-center gap-3 border-white/[0.06] hover:border-white/[0.15] hover:bg-white/[0.04] transition-all font-bold text-xs uppercase tracking-widest text-zinc-300 bg-white/[0.01]"
             onClick={handleGoogleLogin}
             disabled={loading}
+            style={{
+              backgroundColor: "rgba(255, 255, 255, 0.01)",
+              borderColor: "rgba(255, 255, 255, 0.06)",
+              borderRadius: "12px",
+              color: "#d1d5db",
+            }}
           >
-            <FcGoogle size={20} />
+            <FcGoogle size={18} />
             <span>Google Account</span>
           </Button>
-        </Card>
+        </div>
 
-        <p className="text-center mt-8 text-zinc-500 text-[10px] font-bold tracking-widest uppercase">
+        {/* Footer Credit */}
+        <p className="text-center mt-8 text-zinc-600 text-[10px] font-bold tracking-widest uppercase">
           &copy; {new Date().getFullYear()} Developed by{" "}
           <a
             href="https://vx9studio.com"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-zinc-400 hover:text-white transition-colors underline"
+            className="text-zinc-500 hover:text-white transition-colors underline"
           >
             VX9Studio
           </a>
