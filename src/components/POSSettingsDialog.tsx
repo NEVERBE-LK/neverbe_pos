@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Modal, Button } from "antd";
 import {
   IconX,
@@ -12,6 +12,7 @@ import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase/firebaseClient";
+import POSCredentialVerifyAndRequestAuthorizeForm from "./POSCredentialVerifyAndRequestAuthorizeForm";
 
 interface POSSettingsDialogProps {
   open: boolean;
@@ -26,11 +27,18 @@ export default function POSSettingsDialog({
   const { selectedStockId, stocks, openStockDialog, loadCart, loadProducts } =
     usePOS();
 
+  const [verifyOpen, setVerifyOpen] = useState(false);
+
   const currentStock = stocks.find((s) => s.id === selectedStockId);
 
   const handleChangeStock = () => {
-    openStockDialog();
-    onClose();
+    const hasInitialSetup = typeof window !== "undefined" && !!window.localStorage.getItem("neverbePOSStockId");
+    if (!hasInitialSetup) {
+      openStockDialog();
+      onClose();
+      return;
+    }
+    setVerifyOpen(true);
   };
 
   const handleRefreshData = () => {
@@ -58,6 +66,7 @@ export default function POSSettingsDialog({
   };
 
   return (
+    <>
     <Modal
       open={open}
       onCancel={onClose}
@@ -150,5 +159,19 @@ export default function POSSettingsDialog({
         </Button>
       </div>
     </Modal>
+
+    <POSCredentialVerifyAndRequestAuthorizeForm
+      open={verifyOpen}
+      onCancel={() => setVerifyOpen(false)}
+      onSuccess={() => {
+        setVerifyOpen(false);
+        openStockDialog();
+        onClose();
+      }}
+      title="Verify Location Change"
+      description="Changing stock location requires security clearance. Please enter your password."
+      requiredPermission="change_pos_location"
+    />
+  </>
   );
 }
