@@ -69,67 +69,50 @@ export default function POSLoginPage() {
   };
 
   return (
-    <div className="min-h-screen bg-[#07090e] flex items-center justify-center p-6 relative overflow-hidden font-['Inter', sans-serif]">
-      {/* Dynamic Animated Ambient Background Glows */}
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-6 relative font-['Inter', sans-serif]">
+      {/* Existing POS Theme Input Styles */}
       <style>{`
-        @keyframes float-slow {
-          0%, 100% { transform: translate(0px, 0px) scale(1); }
-          33% { transform: translate(30px, -50px) scale(1.1); }
-          66% { transform: translate(-20px, 20px) scale(0.95); }
-        }
-        @keyframes float-reverse {
-          0%, 100% { transform: translate(0px, 0px) scale(1.05); }
-          50% { transform: translate(-40px, 40px) scale(0.95); }
-        }
-        .animate-float-1 {
-          animation: float-slow 15s ease-in-out infinite;
-        }
-        .animate-float-2 {
-          animation: float-reverse 18s ease-in-out infinite;
-        }
         .premium-input .ant-input-prefix {
-          color: #6b7280 !important;
+          color: #9ca3af !important;
           margin-right: 10px !important;
         }
         .premium-input input {
-          color: #fff !important;
+          color: #1f2937 !important;
+          font-weight: 500 !important;
         }
         .premium-input input::placeholder {
-          color: #4b5563 !important;
+          color: #9ca3af !important;
+        }
+        .premium-input.ant-input-affix-wrapper:focus,
+        .premium-input.ant-input-affix-wrapper-focused {
+          border-color: #16a34a !important; /* Tailwind green-600 */
+          box-shadow: 0 0 0 2px rgba(22, 163, 74, 0.1) !important;
         }
       `}</style>
 
-      {/* Floating Blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] bg-emerald-500/[0.04] rounded-full blur-[120px] pointer-events-none animate-float-1" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] bg-teal-500/[0.04] rounded-full blur-[120px] pointer-events-none animate-float-2" />
-      <div className="absolute top-[40%] left-[30%] w-[300px] h-[300px] bg-emerald-600/[0.02] rounded-full blur-[90px] pointer-events-none" />
-
-      <div className="w-full max-w-[440px] z-10">
-        {/* Main Glassmorphic Login Card */}
-        <div className="bg-white/[0.02] border border-white/[0.06] backdrop-blur-3xl shadow-[0_32px_64px_rgba(0,0,0,0.6)] rounded-[32px] p-8 md:p-10 relative overflow-hidden">
-          {/* Subtle top card accent line */}
-          <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-transparent via-emerald-500/40 to-transparent" />
-
+      <div className="w-full max-w-[420px] z-10">
+        {/* Main POS themed Card */}
+        <div className="bg-white border border-gray-200/80 shadow-[0_16px_36px_rgba(0,0,0,0.03)] rounded-[24px] p-8 md:p-10">
           {/* Logo Badge */}
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-white/[0.02] border border-white/[0.08] rounded-2xl mb-4 shadow-2xl group hover:border-emerald-500/30 transition-all duration-500">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-white border border-gray-100 rounded-2xl mb-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
               <img
                 src="/logo.png"
                 alt="NEVERBE Logo"
-                className="w-12 h-12 object-contain group-hover:scale-105 transition-transform duration-500"
+                className="w-12 h-12 object-contain"
               />
             </div>
-            <h1 className="text-xl font-black text-white tracking-[0.2em] uppercase mb-1">
+            <h1 className="text-xl font-black text-gray-900 tracking-[0.2em] uppercase mb-1">
               NEVERBE
             </h1>
-            <p className="text-zinc-500 text-[10px] font-bold uppercase tracking-widest">
+            <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">
               POS Terminal Login
             </p>
           </div>
 
           <form className="space-y-6" onSubmit={handleLogin}>
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
                 Username / Email
               </label>
               <Input
@@ -140,17 +123,17 @@ export default function POSLoginPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 prefix={<IconMail size={18} />}
                 placeholder="pos@neverbe.com"
-                className="premium-input h-13 bg-white/[0.02] border-white/[0.08] hover:border-white/[0.15] focus:border-emerald-500 focus:bg-white/[0.04] transition-all rounded-xl text-base"
+                className="premium-input h-12 bg-white border-gray-200 hover:border-gray-300 transition-all rounded-xl text-base"
                 style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.02)",
-                  borderColor: "rgba(255, 255, 255, 0.08)",
+                  backgroundColor: "#ffffff",
+                  borderColor: "#e5e7eb",
                   borderRadius: "12px",
                 }}
               />
             </div>
 
             <div className="space-y-2">
-              <label className="text-[10px] font-black text-zinc-400 uppercase tracking-widest ml-1">
+              <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-1">
                 Password
               </label>
               <Input.Password
@@ -160,10 +143,10 @@ export default function POSLoginPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 prefix={<IconLock size={18} />}
                 placeholder="••••••••"
-                className="premium-input h-13 bg-white/[0.02] border-white/[0.08] hover:border-white/[0.15] focus:border-emerald-500 focus:bg-white/[0.04] transition-all rounded-xl text-base"
+                className="premium-input h-12 bg-white border-gray-200 hover:border-gray-300 transition-all rounded-xl text-base"
                 style={{
-                  backgroundColor: "rgba(255, 255, 255, 0.02)",
-                  borderColor: "rgba(255, 255, 255, 0.08)",
+                  backgroundColor: "#ffffff",
+                  borderColor: "#e5e7eb",
                   borderRadius: "12px",
                 }}
               />
@@ -175,7 +158,7 @@ export default function POSLoginPage() {
                 htmlType="submit"
                 loading={loading}
                 block
-                className="h-13 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-black text-xs font-black uppercase tracking-widest border-none shadow-[0_8px_30px_rgba(16,185,129,0.2)] hover:shadow-[0_8px_40px_rgba(16,185,129,0.35)] transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
+                className="h-12 rounded-xl bg-black hover:bg-gray-800 text-white text-xs font-black uppercase tracking-widest border-none transition-all duration-300 hover:scale-[1.01] active:scale-[0.99]"
               >
                 {loading ? "AUTHENTICATING..." : "SIGN IN"}
               </Button>
@@ -183,22 +166,22 @@ export default function POSLoginPage() {
           </form>
 
           <div className="relative flex py-4 items-center my-4">
-            <div className="flex-grow border-t border-white/[0.05]"></div>
-            <span className="flex-shrink mx-4 text-zinc-600 text-[9px] font-extrabold uppercase tracking-[0.25em]">
+            <div className="flex-grow border-t border-gray-100"></div>
+            <span className="flex-shrink mx-4 text-gray-400 text-[9px] font-extrabold uppercase tracking-[0.25em]">
               OR SIGN IN WITH
             </span>
-            <div className="flex-grow border-t border-white/[0.05]"></div>
+            <div className="flex-grow border-t border-gray-100"></div>
           </div>
 
           <Button
-            className="w-full h-13 rounded-xl flex items-center justify-center gap-3 border-white/[0.06] hover:border-white/[0.15] hover:bg-white/[0.04] transition-all font-bold text-xs uppercase tracking-widest text-zinc-300 bg-white/[0.01]"
+            className="w-full h-12 rounded-xl flex items-center justify-center gap-3 border-gray-200 hover:border-gray-300 hover:bg-gray-50 transition-all font-bold text-xs uppercase tracking-widest text-gray-600 bg-white"
             onClick={handleGoogleLogin}
             disabled={loading}
             style={{
-              backgroundColor: "rgba(255, 255, 255, 0.01)",
-              borderColor: "rgba(255, 255, 255, 0.06)",
+              backgroundColor: "#ffffff",
+              borderColor: "#e5e7eb",
               borderRadius: "12px",
-              color: "#d1d5db",
+              color: "#4b5563",
             }}
           >
             <FcGoogle size={18} />
