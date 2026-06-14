@@ -98,12 +98,12 @@ export default function POSLoginPage() {
             <div className="inline-flex items-center justify-center w-20 h-20 bg-white border border-gray-100 rounded-2xl mb-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)]">
               <img
                 src="/logo.png"
-                alt="NEVERBE Logo"
+                alt="Neverbe Logo"
                 className="w-12 h-12 object-contain"
               />
             </div>
             <h1 className="text-xl font-black text-gray-900 tracking-[0.2em] uppercase mb-1">
-              NEVERBE
+              Neverbe
             </h1>
             <p className="text-gray-400 text-[10px] font-bold uppercase tracking-widest">
               POS Terminal Login

@@ -64,7 +64,7 @@ export default function POSProducts() {
               {/* Product Info */}
               <div className="p-4 flex flex-col flex-1 border-t border-gray-100 bg-white group-hover:bg-green-50/10 transition-colors">
                 <span className="block text-gray-400 font-bold text-[0.65rem] tracking-widest uppercase mb-1">
-                  {product.brand || "NEVERBE"}
+                  {product.brand || "Neverbe"}
                 </span>
                 <h3
                   className="font-bold text-gray-800 text-sm md:text-base leading-snug mb-2 line-clamp-2 min-h-[2.8em]"

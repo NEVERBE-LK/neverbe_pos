@@ -61,9 +61,8 @@ const POSInvoicePDF: React.FC<InvoicePDFProps> = ({ order }) => {
   return (
     <Document>
       <Page size={{ width: "48mm", height: "274mm" }} style={styles.page}>
-        {/* Header */}
         <View style={styles.header}>
-          <Text style={{ fontSize: 9, fontWeight: "bold" }}>NEVERBE</Text>
+          <Text style={{ fontSize: 9, fontWeight: "bold" }}>Neverbe</Text>
           <Text style={{ fontSize: 7 }}>330/4/10 New Kandy Road</Text>
           <Text style={{ fontSize: 7 }}>Delgoda</Text>
           <Text style={{ fontSize: 7 }}>+94 70 520 8999</Text>

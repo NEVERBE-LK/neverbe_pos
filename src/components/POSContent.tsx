@@ -40,7 +40,7 @@ export default function POSContent() {
 
       {/* Footer */}
       <footer className="bg-white border-t border-gray-150/70 py-3.5 px-6 flex flex-col sm:flex-row justify-between items-center gap-2 text-[10px] font-bold text-gray-400 tracking-widest uppercase z-10 shrink-0">
-        <span>&copy; {new Date().getFullYear()} NEVERBE POS</span>
+        <span>&copy; {new Date().getFullYear()} Neverbe POS</span>
         <span>
           Developed by{" "}
           <a
