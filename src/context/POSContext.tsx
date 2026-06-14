@@ -452,6 +452,13 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
         const formData = new FormData();
         formData.append("data", JSON.stringify(order));
         const { data } = await api.post("/api/v1/pos/orders", formData);
+        
+        const targetStockId = state.selectedStockId;
+        if (targetStockId) {
+          localStorage.removeItem(`neverbePOSCart_${targetStockId}`);
+        }
+        dispatch({ type: "CLEAR_ITEMS" });
+
         if (state.selectedStockId) {
           fetchTodayOrdersCount(state.selectedStockId);
         }
