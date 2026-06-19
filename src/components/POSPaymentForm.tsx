@@ -63,17 +63,19 @@ export default function POSPaymentForm() {
   }, [selectedMethod]);
 
   const customerFee = useMemo(() => {
-    const usedMethodIds = Array.from(new Set(payments.map((p) => p.paymentMethodId)));
-    return usedMethodIds.reduce((acc, methodId) => {
-      const method = paymentMethods.find((m) => m.paymentId === methodId);
-      return acc + (method?.customerFee || 0);
+    return payments.reduce((acc, p) => {
+      const method = paymentMethods.find((m) => m.paymentId === p.paymentMethodId);
+      const feePercent = method?.customerFee || 0;
+      const fee = p.amount * (feePercent / (100 + feePercent));
+      return acc + fee;
     }, 0);
   }, [payments, paymentMethods]);
 
   const basePaid = useMemo(() => {
     return payments.reduce((acc, p) => {
       const method = paymentMethods.find((m) => m.paymentId === p.paymentMethodId);
-      const fee = method?.customerFee || 0;
+      const feePercent = method?.customerFee || 0;
+      const fee = p.amount * (feePercent / (100 + feePercent));
       return acc + (p.amount - fee);
     }, 0);
   }, [payments, paymentMethods]);
@@ -91,7 +93,8 @@ export default function POSPaymentForm() {
 
   const preCalculatedAmount = useMemo(() => {
     if (!selectedMethod || pendingBaseAmount <= 0) return 0;
-    const fee = selectedMethod.customerFee || 0;
+    const feePercent = selectedMethod.customerFee || 0;
+    const fee = pendingBaseAmount * (feePercent / 100);
     return Math.round((pendingBaseAmount + fee) * 100) / 100;
   }, [selectedMethod, pendingBaseAmount]);
 
