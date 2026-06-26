@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { Modal, Button, Select, Input, InputNumber, Table, Spin } from "antd";
+import { Modal, Button, Select, Input, InputNumber, Table, Spin, Switch } from "antd";
 import { IconX, IconPlus, IconTrash, IconPrinter, IconSend } from "@tabler/icons-react";
 import { usePOS } from "../context/POSContext";
 import { POSPayment, POSPaymentMethod } from "@/model/POSTypes";
@@ -35,6 +35,8 @@ export default function POSPaymentForm() {
   const [eBillSending, setEBillSending] = useState(false);
   const [eBillSent, setEBillSent] = useState(false);
   const [receiptMode, setReceiptMode] = useState<"choice" | "physical" | "ebill">("choice");
+  const [chargeCustomerFee, setChargeCustomerFee] = useState(true);
+
   const itemsTotal = useMemo(
     () => items.reduce((acc, i) => acc + i.quantity * i.price, 0),
     [items],
@@ -59,26 +61,27 @@ export default function POSPaymentForm() {
   }, [selectedPaymentMethod, paymentMethods]);
 
   const hasCustomerFee = useMemo(() => {
-    return !!(selectedMethod && (selectedMethod.customerFee || 0) > 0);
-  }, [selectedMethod]);
+    return chargeCustomerFee && !!(selectedMethod && (selectedMethod.customerFee || 0) > 0);
+  }, [selectedMethod, chargeCustomerFee]);
 
   const customerFee = useMemo(() => {
+    if (!chargeCustomerFee) return 0;
     return payments.reduce((acc, p) => {
       const method = paymentMethods.find((m) => m.paymentId === p.paymentMethodId);
       const feePercent = method?.customerFee || 0;
       const fee = p.amount * (feePercent / (100 + feePercent));
       return acc + fee;
     }, 0);
-  }, [payments, paymentMethods]);
+  }, [payments, paymentMethods, chargeCustomerFee]);
 
   const basePaid = useMemo(() => {
     return payments.reduce((acc, p) => {
       const method = paymentMethods.find((m) => m.paymentId === p.paymentMethodId);
-      const feePercent = method?.customerFee || 0;
+      const feePercent = chargeCustomerFee ? (method?.customerFee || 0) : 0;
       const fee = p.amount * (feePercent / (100 + feePercent));
       return acc + (p.amount - fee);
     }, 0);
-  }, [payments, paymentMethods]);
+  }, [payments, paymentMethods, chargeCustomerFee]);
 
   const pendingBaseAmount = useMemo(() => {
     return Math.max(0, subtotal - basePaid);
@@ -93,10 +96,19 @@ export default function POSPaymentForm() {
 
   const preCalculatedAmount = useMemo(() => {
     if (!selectedMethod || pendingBaseAmount <= 0) return 0;
-    const feePercent = selectedMethod.customerFee || 0;
+    const feePercent = chargeCustomerFee ? (selectedMethod.customerFee || 0) : 0;
     const fee = pendingBaseAmount * (feePercent / 100);
     return Math.round((pendingBaseAmount + fee) * 100) / 100;
-  }, [selectedMethod, pendingBaseAmount]);
+  }, [selectedMethod, pendingBaseAmount, chargeCustomerFee]);
+
+  // Auto-prefill payment amount for methods without customer fee (like cash or waived fee)
+  useEffect(() => {
+    if (!hasCustomerFee && pendingDue > 0) {
+      setPaymentAmount(Math.round(pendingDue * 100) / 100 + "");
+    } else {
+      setPaymentAmount("");
+    }
+  }, [selectedPaymentMethod, hasCustomerFee, pendingDue]);
 
   const fetchPaymentMethods = async () => {
     const cacheKey = "neverbePOSPaymentMethodsCache";
@@ -255,6 +267,7 @@ export default function POSPaymentForm() {
       setPayments([]);
       setPaymentAmount("");
       setCardNumber("");
+      setChargeCustomerFee(true);
       loadCart();
     } catch (error: any) {
       console.error(error);
@@ -273,6 +286,7 @@ export default function POSPaymentForm() {
     setEBillPhone("");
     setEBillSent(false);
     setReceiptMode("choice");
+    setChargeCustomerFee(true);
     closePaymentDialog();
   };
 
@@ -483,6 +497,19 @@ export default function POSPaymentForm() {
                   }))}
                 />
               </div>
+
+              {selectedMethod && (selectedMethod.customerFee || 0) > 0 && (
+                <div className="flex flex-col gap-1 h-[38px] justify-center px-2">
+                  <span className="text-[10px] font-bold text-gray-400 uppercase leading-none mb-1">
+                    Charge Fee ({selectedMethod.customerFee}%)
+                  </span>
+                  <Switch
+                    checked={chargeCustomerFee}
+                    onChange={(checked) => setChargeCustomerFee(checked)}
+                    className={chargeCustomerFee ? "bg-green-600" : "bg-gray-300"}
+                  />
+                </div>
+              )}
 
               {selectedPaymentMethod === "card" && (
                 <div className="flex flex-col gap-1">
