@@ -481,7 +481,7 @@ export default function POSPaymentForm() {
             />
 
             {/* Add Payment Form */}
-            <div className="flex flex-wrap gap-2 items-end">
+            <div className="flex flex-wrap gap-3 items-end">
               <div className="flex flex-col gap-1">
                 <span className="text-xs font-bold text-gray-500 tracking-wide uppercase">
                   Method
@@ -499,15 +499,17 @@ export default function POSPaymentForm() {
               </div>
 
               {selectedMethod && (selectedMethod.customerFee || 0) > 0 && (
-                <div className="flex flex-col gap-1 h-[38px] justify-center px-2">
-                  <span className="text-[10px] font-bold text-gray-400 uppercase leading-none mb-1">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-bold text-gray-500 tracking-wide uppercase whitespace-nowrap">
                     Charge Fee ({selectedMethod.customerFee}%)
                   </span>
-                  <Switch
-                    checked={chargeCustomerFee}
-                    onChange={(checked) => setChargeCustomerFee(checked)}
-                    className={chargeCustomerFee ? "bg-green-600" : "bg-gray-300"}
-                  />
+                  <div className="flex items-center justify-center h-[38px] w-[120px] bg-gray-50 border border-gray-200 rounded-xl">
+                    <Switch
+                      checked={chargeCustomerFee}
+                      onChange={(checked) => setChargeCustomerFee(checked)}
+                      className={chargeCustomerFee ? "bg-green-600" : "bg-gray-300"}
+                    />
+                  </div>
                 </div>
               )}
 
@@ -540,13 +542,15 @@ export default function POSPaymentForm() {
               </div>
 
               {hasCustomerFee ? (
-                <div className="flex flex-col gap-1 px-3 py-2 bg-green-50 border border-green-200 rounded-xl">
-                  <span className="text-[10px] font-bold text-green-600 uppercase">
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs font-bold text-green-600 tracking-wide uppercase whitespace-nowrap">
                     Amount to Collect
                   </span>
-                  <span className="font-extrabold text-green-700 leading-none">
-                    Rs. {preCalculatedAmount.toLocaleString()}
-                  </span>
+                  <div className="flex items-center h-[38px] w-[130px] px-3 bg-green-50 border border-green-200 rounded-xl">
+                    <span className="font-extrabold text-green-700 text-sm truncate">
+                      Rs. {preCalculatedAmount.toLocaleString()}
+                    </span>
+                  </div>
                 </div>
               ) : (
                 <div className="flex flex-col gap-1">
