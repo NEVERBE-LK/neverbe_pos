@@ -14,6 +14,8 @@ import { pdf } from "@react-pdf/renderer";
 import POSInvoicePDF from "./POSInvoicePDF";
 import { Order } from "@/model/Order";
 
+import { formatSLDateOnly } from "../utils/date";
+
 interface POSInvoiceDialogProps {
   open: boolean;
   onClose: () => void;
@@ -169,7 +171,7 @@ export default function POSInvoiceDialog({
       title: "Date",
       dataIndex: "createdAt",
       key: "createdAt",
-      render: (date: string) => new Date(date).toLocaleDateString(),
+      render: (date: string) => formatSLDateOnly(date),
     },
     {
       title: "Items",

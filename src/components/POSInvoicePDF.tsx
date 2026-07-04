@@ -1,8 +1,7 @@
-"use client";
-
 import React from "react";
-import { Document, Page, Text, View, StyleSheet } from "@react-pdf/renderer";
+import { Document, Page, Text, View, StyleSheet, Image } from "@react-pdf/renderer";
 import { Order } from "@/model/Order";
+import { formatSLDate } from "../utils/date";
 
 interface InvoicePDFProps {
   order: Order;
@@ -77,7 +76,7 @@ const POSInvoicePDF: React.FC<InvoicePDFProps> = ({ order }) => {
           Order ID: {order.orderId.toUpperCase()}
         </Text>
         <Text style={[styles.textCenter, { marginBottom: 4, fontSize: 7 }]}>
-          {new Date(order.createdAt as any).toLocaleString()}
+          {formatSLDate(order.createdAt)}
         </Text>
 
         {/* Items List */}
@@ -89,23 +88,31 @@ const POSInvoicePDF: React.FC<InvoicePDFProps> = ({ order }) => {
             return (
             <View key={idx} style={{ marginBottom: 3 }}>
               <View style={styles.tableRow}>
-                <View style={styles.left}>
-                  <Text style={{ fontSize: 7 }}>
-                    {item.quantity} x {item.name}
-                  </Text>
-                  {item.variantName && (
-                    <Text style={{ fontSize: 6, color: "#666" }}>
-                      {item.variantName} | {item.size}
-                    </Text>
+                <View style={[styles.left, { flexDirection: "row", alignItems: "flex-start" }]}>
+                  {item.thumbnail && (
+                    <Image
+                      src={item.thumbnail}
+                      style={{ width: 12, height: 12, marginRight: 4, objectFit: "contain" }}
+                    />
                   )}
-                  <Text style={{ fontSize: 6, color: "#666" }}>
-                    @ Rs. {Number(item.price).toFixed(2)} each
-                  </Text>
-                  {hasDiscount && (
-                    <Text style={{ fontSize: 6, color: "#666" }}>
-                      Disc: -{Number(item.discount).toFixed(2)} = Rs. {netPrice.toFixed(2)} each
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 7 }}>
+                      {item.quantity} x {item.name}
                     </Text>
-                  )}
+                    {item.size && (
+                      <Text style={{ fontSize: 6, color: "#666" }}>
+                        Size: {item.size}
+                      </Text>
+                    )}
+                    <Text style={{ fontSize: 6, color: "#666" }}>
+                      @ Rs. {Number(item.price).toFixed(2)} each
+                    </Text>
+                    {hasDiscount && (
+                      <Text style={{ fontSize: 6, color: "#666" }}>
+                        Disc: -{Number(item.discount).toFixed(2)} = Rs. {netPrice.toFixed(2)} each
+                      </Text>
+                    )}
+                  </View>
                 </View>
                 <Text style={styles.right}>
                   {(netPrice * item.quantity).toFixed(2)}
@@ -160,3 +167,4 @@ const POSInvoicePDF: React.FC<InvoicePDFProps> = ({ order }) => {
 };
 
 export default POSInvoicePDF;
+
