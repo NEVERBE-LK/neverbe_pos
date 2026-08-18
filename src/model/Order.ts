@@ -45,7 +45,6 @@ export interface Order {
   discount: number;
   from: string;
   stockId?: string;
-  integrity: boolean;
   paymentReceived?: Payment[];
 
   // Promotion & Coupon tracking
