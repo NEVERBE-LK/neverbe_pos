@@ -64,6 +64,15 @@ export interface Order {
   restocked?: boolean;
   cleanupProcessed?: boolean;
 
+  // Anti-Spam & Risk Protection
+  riskStatus?: "NORMAL" | "HIGH_RISK";
+  ipqsFraudScore?: number;
+  ipqsRiskLevel?: string;
+  ipqsLineType?: string;
+  ipqsReasons?: string[];
+  deliveryFeePrepaid?: boolean;
+  deliveryFeeTxnId?: string;
+
   createdAt: Timestamp | string;
   updatedAt: Timestamp | string;
 }
