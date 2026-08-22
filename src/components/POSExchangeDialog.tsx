@@ -314,13 +314,8 @@ export default function POSExchangeDialog({
   };
 
   const handleProcessExchange = async () => {
-    if (!returnedItems.length || !replacementItems.length) {
-      setError("Select return & replacement items");
-      return;
-    }
-
-    if (isRefundRequired) {
-      setError("Refunds are not allowed");
+    if (!returnedItems.length) {
+      setError("Please select at least one item to return");
       return;
     }
 
@@ -335,7 +330,7 @@ export default function POSExchangeDialog({
           returnedItems,
           replacementItems,
           notes,
-          paymentMethod: priceDifference > 0 ? paymentMethod : undefined,
+          paymentMethod: priceDifference > 0 ? paymentMethod : "STORE_CREDIT",
         }),
       );
 
@@ -507,17 +502,32 @@ export default function POSExchangeDialog({
             <p className="text-gray-500 mt-1">
               The exchange has been processed successfully.
             </p>
-            {priceDifference > 0 && (
-              <div className="mt-4 p-4 rounded-xl border border-green-200 bg-green-50 inline-block">
-                <p className="font-bold text-green-800 text-lg">
-                  CUSTOMER OWES: Rs. {priceDifference.toLocaleString()}
+            {priceDifference < 0 ? (
+              <div className="mt-4 p-4 rounded-xl border border-emerald-200 bg-emerald-50 inline-block">
+                <p className="font-bold text-emerald-800 text-base">
+                  STORE CREDIT CREATED: Rs. {Math.abs(priceDifference).toLocaleString()}
+                </p>
+                <p className="text-xs text-emerald-600 font-mono mt-0.5">
+                  Order #{orderData?.orderId} • Store credit balance registered
+                </p>
+              </div>
+            ) : priceDifference > 0 ? (
+              <div className="mt-4 p-4 rounded-xl border border-amber-200 bg-amber-50 inline-block">
+                <p className="font-bold text-amber-800 text-base">
+                  CUSTOMER OWES: Rs. {priceDifference.toLocaleString()} ({paymentMethod})
+                </p>
+              </div>
+            ) : (
+              <div className="mt-4 p-4 rounded-xl border border-slate-200 bg-slate-50 inline-block">
+                <p className="font-bold text-slate-700 text-base">
+                  EVEN EXCHANGE COMPLETED (NO BALANCE DUE)
                 </p>
               </div>
             )}
             <Button
               type="primary"
               onClick={handleClose}
-              className="mt-6 h-12 px-8 rounded-xl font-semibold shadow-sm text-base"
+              className="mt-6 h-12 px-8 rounded-xl font-semibold shadow-sm text-base block mx-auto"
               style={{ backgroundColor: "#16a34a" }}
             >
               Close
@@ -684,48 +694,63 @@ export default function POSExchangeDialog({
               <div
                 className={`p-5 rounded-2xl border flex justify-between items-center shadow-sm ${
                   priceDifference < 0
-                    ? "bg-red-50 border-red-200"
-                    : "bg-green-50 border-green-200"
+                    ? "bg-emerald-50 border-emerald-200"
+                    : priceDifference > 0
+                    ? "bg-amber-50 border-amber-200"
+                    : "bg-slate-50 border-slate-200"
                 }`}
               >
+                <div>
+                  <p
+                    className={`text-lg font-bold tracking-tight ${
+                      priceDifference < 0
+                        ? "text-emerald-800"
+                        : priceDifference > 0
+                        ? "text-amber-800"
+                        : "text-slate-800"
+                    }`}
+                  >
+                    {priceDifference < 0
+                      ? "EXCHANGE CREDIT CREATED"
+                      : priceDifference > 0
+                      ? "CUSTOMER OWES"
+                      : "EVEN EXCHANGE (BALANCED)"}
+                  </p>
+                  {priceDifference < 0 && (
+                    <p className="text-xs text-emerald-600 font-medium">
+                      Store credit balance of Rs. {Math.abs(priceDifference).toLocaleString()} will be issued to customer.
+                    </p>
+                  )}
+                </div>
                 <p
-                  className={`text-lg font-bold tracking-tight ${priceDifference < 0 ? "text-red-600" : "text-green-800"}`}
-                >
-                  {priceDifference >= 0
-                    ? "CUSTOMER OWES"
-                    : "REFUND NOT ALLOWED"}
-                </p>
-                <p
-                  className={`text-3xl font-black tracking-tight ${priceDifference < 0 ? "text-red-500" : "text-green-600"}`}
+                  className={`text-3xl font-black tracking-tight font-mono ${
+                    priceDifference < 0
+                      ? "text-emerald-600"
+                      : priceDifference > 0
+                      ? "text-amber-600"
+                      : "text-slate-600"
+                  }`}
                 >
                   Rs. {Math.abs(priceDifference).toLocaleString()}
                 </p>
               </div>
-
-              {priceDifference < 0 && (
-                <Alert
-                  message="Exchange value must be equal or greater than return value. Refunds are not enabled."
-                  type="error"
-                  className="mt-2"
-                />
-              )}
             </div>
 
-            {/* Payment Method Selection */}
+            {/* Payment Method Selection for Outstanding Balance */}
             {priceDifference > 0 && (
-              <div className="p-3 border border-gray-200">
-                <p className="text-xs font-bold uppercase mb-2">
-                  Select Payment Method
+              <div className="p-3 border border-gray-200 rounded-xl">
+                <p className="text-xs font-bold uppercase mb-2 text-slate-700">
+                  Select Payment Method for Outstanding Balance
                 </p>
                 <div className="flex gap-2 flex-wrap">
                   {paymentMethods.map((pm) => (
                     <button
                       key={pm.paymentId}
                       onClick={() => setPaymentMethod(pm.name)}
-                      className={`px-3 py-1 border-2 font-bold text-sm ${
+                      className={`px-3 py-1.5 border-2 rounded-lg font-bold text-xs ${
                         paymentMethod === pm.name
                           ? "border-green-600 bg-green-600 text-white"
-                          : "border-gray-300 hover:border-green-600"
+                          : "border-gray-300 hover:border-green-600 text-gray-700"
                       }`}
                     >
                       {pm.name}
@@ -758,8 +783,6 @@ export default function POSExchangeDialog({
             loading={processing}
             disabled={
               returnedItems.length === 0 ||
-              replacementItems.length === 0 ||
-              isRefundRequired ||
               (priceDifference > 0 && !paymentMethod)
             }
             className="h-12 px-8 rounded-xl font-semibold shadow-sm tracking-wide"

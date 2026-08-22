@@ -54,11 +54,27 @@ export default function POSPaymentForm() {
     [itemsTotal, totalDiscount],
   );
 
+  const availableMethods = useMemo(() => {
+    const list = [...paymentMethods];
+    if (!list.some((m) => m.name.toLowerCase().includes("exchange") || m.name.toLowerCase().includes("credit"))) {
+      list.push({
+        paymentId: "pm-credit",
+        name: "Store Credit",
+        fee: 0,
+        customerFee: 0,
+        status: "ACTIVE",
+        available: ["pos", "store"],
+        createdAt: "",
+      });
+    }
+    return list;
+  }, [paymentMethods]);
+
   const selectedMethod = useMemo(() => {
-    return paymentMethods.find(
+    return availableMethods.find(
       (m) => m.name.toLowerCase() === selectedPaymentMethod.toLowerCase(),
     );
-  }, [selectedPaymentMethod, paymentMethods]);
+  }, [selectedPaymentMethod, availableMethods]);
 
   const hasCustomerFee = useMemo(() => {
     return chargeCustomerFee && !!(selectedMethod && (selectedMethod.customerFee || 0) > 0);
@@ -491,7 +507,7 @@ export default function POSPaymentForm() {
                   onChange={(value) => setSelectedPaymentMethod(value)}
                   style={{ width: 140 }}
                   className="[&_.ant-select-selector]:!rounded-xl h-[38px] font-semibold"
-                  options={paymentMethods.map((m) => ({
+                  options={availableMethods.map((m) => ({
                     value: m.name.toLowerCase(),
                     label: m.name,
                   }))}
