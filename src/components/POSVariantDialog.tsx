@@ -202,12 +202,15 @@ export default function POSVariantDialog({
 
       if (onAddToCart) {
         onAddToCart(itemData);
+        toast.success("Added to exchange");
+        onClose();
       } else {
         await addItemToCart(itemData);
+        toast.success(`${product.name} (${selectedSize}) added to cart`);
+        setQuantity(1);
+        setDiscount(0);
+        // Do not auto-close dialog after adding to cart
       }
-
-      toast.success(onAddToCart ? "Added to exchange" : "Added to cart");
-      onClose();
     } catch (error: any) {
       toast.error(error.message || "Failed to add to cart");
     } finally {
@@ -512,9 +515,9 @@ export default function POSVariantDialog({
       <div className="flex justify-end gap-3 px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 rounded-b-3xl">
         <Button
           onClick={onClose}
-          className="h-11 px-6 rounded-xl font-bold text-xs uppercase tracking-wider text-neutral-600 hover:bg-neutral-200/70 border-transparent"
+          className="h-11 px-6 rounded-xl font-bold text-xs uppercase tracking-wider text-neutral-600 hover:bg-neutral-200/70 border-transparent cursor-pointer"
         >
-          CANCEL
+          {onAddToCart ? "CANCEL" : "DONE"}
         </Button>
         <Button
           type="primary"
