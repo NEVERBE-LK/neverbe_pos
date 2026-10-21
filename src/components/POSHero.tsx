@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Input, Tooltip } from "antd";
 import {
   IconSearch,
@@ -21,7 +21,9 @@ import POSOnlineOrdersDialog from "./POSOnlineOrdersDialog";
 import POSNotificationDrawer from "./POSNotificationDrawer";
 import { usePOSNotifications } from "../hooks/usePOSNotifications";
 import { signOut } from "firebase/auth";
-import { auth } from "@/firebase/firebaseClient";
+import { auth, db } from "@/firebase/firebaseClient";
+import { collection, query as firestoreQuery, where, onSnapshot } from "firebase/firestore";
+import api from "@/lib/api";
 import toast from "react-hot-toast";
 import POSCredentialVerifyAndRequestAuthorizeForm from "./POSCredentialVerifyAndRequestAuthorizeForm";
 import BrandLogo from "./BrandLogo";
@@ -47,8 +49,63 @@ export default function POSHero() {
   const [showOnlineOrdersDialog, setShowOnlineOrdersDialog] = useState(false);
   const [showNotificationsDrawer, setShowNotificationsDrawer] = useState(false);
   const [targetOrderId, setTargetOrderId] = useState<string | null>(null);
+  const [processingOrdersCount, setProcessingOrdersCount] = useState<number>(0);
 
-  const { notifications, unreadCount, markAsRead, markAllAsRead } = usePOSNotifications();
+  const fetchProcessingOrdersCount = useCallback(async () => {
+    try {
+      const res = await api.get("/api/v1/pos/orders/processing-count");
+      if (typeof res.data?.count === "number") {
+        setProcessingOrdersCount(res.data.count);
+        return;
+      }
+    } catch {
+      try {
+        const erpRes = await api.get("/api/v1/erp/orders", {
+          params: { status: "Processing", from: "Website", page: 1, limit: 1 },
+        });
+        const total = erpRes.data?.total ?? (erpRes.data?.dataList?.length || 0);
+        setProcessingOrdersCount(total);
+      } catch (err) {
+        console.debug("[POSHero] Failed to fetch processing orders count", err);
+      }
+    }
+  }, []);
+
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = usePOSNotifications(() => {
+    fetchProcessingOrdersCount();
+  });
+
+  useEffect(() => {
+    fetchProcessingOrdersCount();
+    const interval = setInterval(fetchProcessingOrdersCount, 30000);
+
+    let unsubscribe = () => {};
+    try {
+      if (db) {
+        const q = firestoreQuery(
+          collection(db, "orders"),
+          where("from", "==", "Website"),
+          where("status", "==", "Processing")
+        );
+        unsubscribe = onSnapshot(
+          q,
+          (snap) => {
+            setProcessingOrdersCount(snap.size);
+          },
+          (err) => {
+            console.debug("[POSHero] Firestore orders listener fallback to polling:", err.message);
+          }
+        );
+      }
+    } catch (err) {
+      console.debug("[POSHero] Firestore setup error:", err);
+    }
+
+    return () => {
+      clearInterval(interval);
+      unsubscribe();
+    };
+  }, [fetchProcessingOrdersCount]);
 
   const handleOpenOrderFromNotification = (orderId: string) => {
     setTargetOrderId(orderId);
@@ -185,17 +242,17 @@ export default function POSHero() {
             <div
               className={`flex items-center gap-2 px-3.5 h-11 rounded-xl border text-[11px] font-bold uppercase tracking-wider justify-center select-none shrink-0 ${
                 isOnline
-                  ? "bg-emerald-50 text-emerald-800 border-emerald-200/80"
+                  ? "bg-neutral-100 text-neutral-800 border-neutral-200"
                   : "bg-amber-50 text-amber-800 border-amber-200 animate-pulse"
               }`}
             >
-              <span className={`w-2 h-2 rounded-full ${isOnline ? "bg-emerald-500" : "bg-amber-500"}`} />
+              <span className={`w-2 h-2 rounded-full ${isOnline ? "bg-emerald-500 animate-pulse" : "bg-amber-500"}`} />
               <span>{isOnline ? "Online" : `Offline (${offlineQueue?.length || 0})`}</span>
             </div>
           </div>
 
           {/* Quick Actions Row */}
-          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide py-2 -my-2 px-1">
             <Tooltip title="Item Exchange">
               <button
                 type="button"
@@ -216,7 +273,7 @@ export default function POSHero() {
                 <IconReceipt size={20} />
               </button>
             </Tooltip>
-            <Tooltip title="Orders Processing">
+            <Tooltip title={`Orders Processing${processingOrdersCount > 0 ? ` (${processingOrdersCount} pending)` : ""}`}>
               <button
                 type="button"
                 onClick={handleOnlineOrdersClick}
@@ -224,12 +281,10 @@ export default function POSHero() {
                 aria-label="Orders Processing"
               >
                 <IconTruck size={20} />
-                {unreadCount > 0 ? (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-emerald-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white font-mono">
-                    {unreadCount > 9 ? "9+" : unreadCount}
+                {processingOrdersCount > 0 && (
+                  <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-black text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white font-mono shadow-xs z-10">
+                    {processingOrdersCount > 9 ? "9+" : processingOrdersCount}
                   </span>
-                ) : (
-                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white" />
                 )}
               </button>
             </Tooltip>
@@ -242,7 +297,7 @@ export default function POSHero() {
               >
                 <IconBell size={20} />
                 {unreadCount > 0 && (
-                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white font-mono animate-pulse">
+                  <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] px-1 bg-red-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white font-mono animate-pulse z-10 shadow-xs">
                     {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
@@ -319,9 +374,14 @@ export default function POSHero() {
         onClose={() => {
           setShowOnlineOrdersDialog(false);
           setTargetOrderId(null);
+          fetchProcessingOrdersCount();
         }}
         selectedStockId={selectedStockId}
         initialOrderId={targetOrderId}
+        onOrderProcessed={() => {
+          setProcessingOrdersCount((prev) => Math.max(0, prev - 1));
+          fetchProcessingOrdersCount();
+        }}
       />
       <POSNotificationDrawer
         open={showNotificationsDrawer}

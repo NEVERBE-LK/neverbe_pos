@@ -26,6 +26,7 @@ interface POSOnlineOrdersDialogProps {
   onClose: () => void;
   selectedStockId?: string | null;
   initialOrderId?: string | null;
+  onOrderProcessed?: () => void;
 }
 
 export default function POSOnlineOrdersDialog({
@@ -33,6 +34,7 @@ export default function POSOnlineOrdersDialog({
   onClose,
   selectedStockId,
   initialOrderId,
+  onOrderProcessed,
 }: POSOnlineOrdersDialogProps) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
@@ -70,9 +72,6 @@ export default function POSOnlineOrdersDialog({
       };
       if (activeTab !== "ALL") {
         params.status = activeTab;
-      }
-      if (selectedStockId) {
-        params.stockId = selectedStockId;
       }
 
       let fetchedOrders: Order[] = [];
@@ -133,6 +132,7 @@ export default function POSOnlineOrdersDialog({
         });
       }
       fetchOrders();
+      onOrderProcessed?.();
     } catch (err: any) {
       console.error("Process order error:", err);
       toast.error(err.response?.data?.message || `Failed to process order`);
@@ -180,8 +180,8 @@ export default function POSOnlineOrdersDialog({
         );
       case "completed":
         return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-neutral-900 text-white">
+            <span className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
             Completed
           </span>
         );
@@ -372,7 +372,7 @@ export default function POSOnlineOrdersDialog({
                     </span>
                     <p className="font-bold text-neutral-900">{selectedOrder.paymentMethod?.toUpperCase() || "COD"}</p>
                     <span className={`text-[10px] font-black uppercase inline-block mt-0.5 px-2 py-0.5 rounded ${
-                      selectedOrder.paymentStatus?.toLowerCase() === "paid" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
+                      selectedOrder.paymentStatus?.toLowerCase() === "paid" ? "bg-neutral-900 text-white" : "bg-amber-50 text-amber-700"
                     }`}>
                       {selectedOrder.paymentStatus || "Pending"}
                     </span>
@@ -428,14 +428,14 @@ export default function POSOnlineOrdersDialog({
                 </span>
 
                 {selectedOrder.status?.toLowerCase() === "completed" ? (
-                  <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-200/80 flex items-center justify-between gap-3 flex-wrap">
+                  <div className="p-4 rounded-xl bg-neutral-100/90 border border-neutral-200 flex items-center justify-between gap-3 flex-wrap">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                      <div className="w-8 h-8 rounded-lg bg-neutral-950 text-white flex items-center justify-center shrink-0">
                         <IconCheck size={18} />
                       </div>
                       <div>
-                        <p className="text-xs font-black text-emerald-950 m-0">Order Completed & Fulfilled</p>
-                        <p className="text-[11px] text-emerald-700 m-0 font-mono mt-0.5">
+                        <p className="text-xs font-black text-neutral-900 m-0">Order Completed & Fulfilled</p>
+                        <p className="text-[11px] text-neutral-500 m-0 font-mono mt-0.5">
                           {selectedOrder.courier || "Courier"} {selectedOrder.trackingNumber ? `• Ref: ${selectedOrder.trackingNumber}` : ""}
                         </p>
                       </div>
@@ -443,7 +443,7 @@ export default function POSOnlineOrdersDialog({
                     <Button
                       onClick={() => handlePrintSlip(selectedOrder)}
                       icon={<IconPrinter size={16} />}
-                      className="h-10 px-4 rounded-xl font-bold text-xs uppercase tracking-wider text-neutral-800 bg-white hover:bg-neutral-100 border-emerald-300"
+                      className="h-10 px-4 rounded-xl font-bold text-xs uppercase tracking-wider text-neutral-800 bg-white hover:bg-neutral-100 border-neutral-300 shadow-2xs"
                     >
                       Print Slip
                     </Button>

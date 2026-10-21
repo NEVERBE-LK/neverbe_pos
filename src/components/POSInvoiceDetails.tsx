@@ -69,7 +69,7 @@ export default function POSInvoiceDetails() {
               Current Order
             </h2>
             {todayOrdersCount !== undefined && (
-              <span className="text-[10px] font-bold text-emerald-400 font-mono tracking-wider block mt-0.5">
+              <span className="text-[10px] font-bold text-zinc-400 font-mono tracking-wider block mt-0.5">
                 #{todayOrdersCount} TODAY
               </span>
             )}
@@ -189,10 +189,10 @@ export default function POSInvoiceDetails() {
 
         {totalDiscount > 0 && (
           <div className="flex justify-between mb-2 text-xs">
-            <span className="text-emerald-600 font-bold uppercase tracking-wider font-mono text-[11px]">
+            <span className="text-neutral-500 font-bold uppercase tracking-wider font-mono text-[11px]">
               Total Discount
             </span>
-            <span className="font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-mono text-xs">
+            <span className="font-extrabold text-neutral-900 bg-neutral-100 px-2 py-0.5 rounded border border-neutral-200 font-mono text-xs">
               -Rs. {totalDiscount.toLocaleString()}
             </span>
           </div>
