@@ -7,18 +7,19 @@ import POSInvoiceDetails from "./POSInvoiceDetails";
 import POSPaymentForm from "./POSPaymentForm";
 import POSStockDialog from "./POSStockDialog";
 import { usePOS } from "../context/POSContext";
+
 export default function POSContent() {
   const { isProductsLoading } = usePOS();
 
   return (
-    <div className="flex flex-col min-h-screen lg:h-screen w-full bg-gray-50 overflow-auto lg:overflow-hidden">
-      {/* Main Grid */}
-      <div className="flex-1 flex flex-col lg:flex-row gap-4 p-4 lg:p-6 lg:min-h-0 lg:overflow-hidden relative">
-        {/* Left Panel - Products */}
-        <div className="flex-[1.5] flex flex-col gap-2 h-auto lg:h-full transition-all duration-300">
+    <div className="flex flex-col min-h-screen lg:h-screen w-full bg-[#f6f7f6] overflow-auto lg:overflow-hidden select-none font-sans">
+      {/* Main Grid Layout */}
+      <div className="flex-1 flex flex-col lg:flex-row gap-3.5 p-3 sm:p-4 lg:p-5 lg:min-h-0 lg:overflow-hidden relative">
+        {/* Left Panel - Hero, Search & Catalog Grid */}
+        <div className="flex-[1.55] flex flex-col gap-2.5 h-auto lg:h-full transition-all duration-200">
           <POSHero />
           {isProductsLoading ? (
-            <div className="flex justify-center items-center flex-1 min-h-[400px]">
+            <div className="flex justify-center items-center flex-1 min-h-[360px] bg-white rounded-2xl border border-neutral-200/80">
               <Spin size="large" />
             </div>
           ) : (
@@ -28,8 +29,8 @@ export default function POSContent() {
           )}
         </div>
 
-        {/* Right Panel - Invoice Details */}
-        <div className="flex-1 flex flex-col h-auto lg:h-full transition-all duration-300">
+        {/* Right Panel - Order & Invoice Details */}
+        <div className="flex-1 flex flex-col h-auto lg:h-full transition-all duration-200">
           <POSInvoiceDetails />
         </div>
 
@@ -38,19 +39,15 @@ export default function POSContent() {
         <POSPaymentForm />
       </div>
 
-      {/* Footer */}
-      <footer className="bg-white border-t border-gray-150/70 py-3.5 px-6 flex flex-col sm:flex-row justify-between items-center gap-2 text-[10px] font-bold text-gray-400 tracking-widest uppercase z-10 shrink-0">
-        <span>&copy; {new Date().getFullYear()} Neverbe POS</span>
+      {/* Sportswear Minimal Sub-Footer */}
+      <footer className="bg-white border-t border-neutral-200/80 py-2.5 px-5 flex flex-col sm:flex-row justify-between items-center gap-2 text-[10px] font-extrabold text-zinc-400 tracking-widest uppercase z-10 shrink-0">
+        <span className="flex items-center gap-2">
+          <span>&copy; {new Date().getFullYear()} NEVERBE POS</span>
+          <span className="text-zinc-300">·</span>
+          <span>Delgoda Flagship Store</span>
+        </span>
         <span>
-          Developed by{" "}
-          <a
-            href="https://vx9studio.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-gray-650 hover:text-black hover:underline transition-all"
-          >
-            VX9Studio
-          </a>
+          Secured Point of Sale Terminal · v2.0
         </span>
       </footer>
     </div>

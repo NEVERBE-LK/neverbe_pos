@@ -52,45 +52,48 @@ export default function POSStockDialog() {
     <>
       <Modal
         open={showStockDialog}
-        width={400}
+        width={420}
         closable={false}
         mask={{ closable: false }}
         keyboard={false}
         footer={null}
-        className="[&_.ant-modal-content]:rounded-2xl! [&_.ant-modal-content]:border-0! [&_.ant-modal-content]:shadow-xl! [&_.ant-modal-content]:p-0!"
+        className="[&_.ant-modal-content]:rounded-3xl! [&_.ant-modal-content]:border-0! [&_.ant-modal-content]:shadow-2xl! [&_.ant-modal-content]:p-0! overflow-hidden"
       >
         {/* Header */}
-        <div className="border-b border-gray-100 bg-gray-50/50 p-5 rounded-t-2xl">
-          <h2 className="text-xl font-bold text-gray-800">
+        <div className="border-b border-neutral-100 bg-neutral-900 text-white p-6">
+          <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 block mb-1">
+            LOCATION CHECKPOINT
+          </span>
+          <h2 className="text-xl font-black text-white tracking-tight leading-tight">
             Select Stock Location
           </h2>
-          <p className="text-sm text-gray-500 mt-1">
-            Choose the store or warehouse to load inventory from
+          <p className="text-xs text-neutral-400 mt-1 font-medium">
+            Choose the store or warehouse terminal to load inventory from.
           </p>
         </div>
 
         {/* Content */}
-        <div className="py-6 px-4">
+        <div className="py-6 px-6">
           {isStocksLoading ? (
             <div className="flex justify-center items-center py-8">
               <Spin size="large" />
             </div>
           ) : stocks.length === 0 ? (
             <div className="flex justify-center items-center py-8">
-              <p className="text-gray-500 font-medium">
+              <p className="text-neutral-500 font-semibold text-xs uppercase tracking-wider">
                 No stock locations available
               </p>
             </div>
           ) : (
-            <div className="mt-2">
-              <label className="block text-xs font-semibold text-gray-500 uppercase tracking-widest mb-2">
-                Stock Location
+            <div>
+              <label className="block text-[11px] font-black text-neutral-500 uppercase tracking-[0.15em] mb-2.5">
+                Terminal Stock Location
               </label>
               <Select
                 value={selectedStockId || undefined}
                 onChange={handleChange}
                 placeholder="Select location..."
-                className="w-full font-medium h-12 text-base"
+                className="w-full font-bold h-12 text-sm [&_.ant-select-selector]:!rounded-xl"
                 size="large"
                 options={stocks.map((stock) => ({
                   value: stock.id,
@@ -102,11 +105,11 @@ export default function POSStockDialog() {
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end gap-3 p-5 border-t border-gray-100 bg-gray-50/30 rounded-b-2xl">
+        <div className="flex justify-end gap-3 p-5 border-t border-neutral-100 bg-neutral-50/50 rounded-b-3xl">
           {selectedStockId && (
             <Button
               onClick={closeStockDialog}
-              className="font-medium h-12 px-6 rounded-xl hover:bg-gray-100 border-transparent text-gray-600"
+              className="font-bold h-12 px-6 rounded-xl hover:bg-neutral-200/70 border-transparent text-neutral-600 text-xs uppercase tracking-wider"
             >
               Cancel
             </Button>
@@ -115,12 +118,9 @@ export default function POSStockDialog() {
             type="primary"
             onClick={handleConfirm}
             disabled={!selectedStockId || isStocksLoading}
-            className="font-semibold h-12 px-8 rounded-xl shadow-sm"
-            style={{
-              backgroundColor: selectedStockId ? "#16a34a" : undefined,
-            }}
+            className="font-black h-12 px-8 rounded-xl shadow-md text-xs uppercase tracking-widest text-white !bg-black hover:!bg-neutral-800 disabled:!bg-neutral-300 transition-all"
           >
-            Continue
+            Confirm Location
           </Button>
         </div>
       </Modal>

@@ -11,7 +11,37 @@ createRoot(document.getElementById("root")!).render(
       <ConfigProvider
         theme={{
           token: {
-            colorPrimary: "#16a34a",
+            colorPrimary: "#000000",
+            colorSuccess: "#10b981",
+            colorError: "#ef4444",
+            colorWarning: "#f59e0b",
+            colorTextBase: "#0a0a0a",
+            borderRadius: 14,
+            fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+          },
+          components: {
+            Button: {
+              borderRadius: 14,
+              fontWeight: 700,
+              controlHeight: 46,
+            },
+            Input: {
+              borderRadius: 12,
+              controlHeight: 46,
+            },
+            Select: {
+              borderRadius: 12,
+              controlHeight: 46,
+            },
+            Modal: {
+              borderRadiusLG: 24,
+            },
+            Card: {
+              borderRadiusLG: 20,
+            },
+            Table: {
+              borderRadius: 16,
+            },
           },
         }}
       >

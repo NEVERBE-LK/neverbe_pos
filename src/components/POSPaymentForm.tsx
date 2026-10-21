@@ -384,65 +384,88 @@ export default function POSPaymentForm() {
       className="[&_.ant-modal-content]:!rounded-2xl [&_.ant-modal-content]:!border-0 [&_.ant-modal-content]:!shadow-xl [&_.ant-modal-content]:!p-0"
     >
       {/* Header */}
-      <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-gray-50/50 rounded-t-2xl">
-        <h2 className="text-xl font-bold text-gray-800">Complete Payment</h2>
+      <div className="flex justify-between items-center p-5 border-b border-neutral-100 bg-neutral-900 text-white rounded-t-2xl">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-lg bg-neutral-800 flex items-center justify-center font-black text-xs text-white">
+            Rs
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
+                PAYMENT TENDER
+              </span>
+              {invoiceId && (
+                <span className="bg-neutral-800 text-neutral-300 font-mono text-[10px] font-bold px-2 py-0.5 rounded">
+                  #{invoiceId.toUpperCase()}
+                </span>
+              )}
+            </div>
+            <h2 className="text-lg font-black text-white tracking-tight leading-tight">
+              {completedOrder ? "Order Receipt Dispatch" : "Complete Transaction"}
+            </h2>
+          </div>
+        </div>
         <button
           onClick={handleClose}
-          className="flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all"
+          className="flex items-center justify-center w-8 h-8 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all"
         >
           <IconX size={20} />
         </button>
       </div>
 
       {/* Content */}
-      <div className="p-4">
+      <div className="p-5">
         {loading ? (
-          <div className="flex justify-center items-center py-8">
+          <div className="flex justify-center items-center py-12">
             <Spin size="large" />
           </div>
         ) : completedOrder ? (
-          <div className="flex flex-col gap-6 items-center w-full py-4">
-            <div className="text-center w-full bg-green-50/80 border border-green-200 rounded-2xl p-6">
-              <h3 className="text-green-700 font-extrabold text-2xl mb-1">
-                Order Completed Successfully!
+          <div className="flex flex-col gap-6 items-center w-full py-2">
+            <div className="text-center w-full bg-neutral-950 text-white border border-neutral-800 rounded-2xl p-6 relative overflow-hidden">
+              <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-emerald-500 via-neutral-100 to-emerald-500" />
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] font-black tracking-widest uppercase mb-2">
+                VERIFIED TRANSACTION
+              </div>
+              <h3 className="text-white font-black text-2xl tracking-tight mb-1">
+                Order Completed Successfully
               </h3>
-              <p className="text-green-600 font-medium">
-                How would the customer like their receipt?
+              <p className="text-neutral-400 text-xs font-semibold uppercase tracking-wider">
+                Order #{completedOrder.orderId?.toUpperCase()} · LKR {completedOrder.total?.toLocaleString()}
               </p>
             </div>
 
             {receiptMode === "choice" && (
-              <div className="flex flex-col sm:flex-row gap-6 w-full justify-center px-4 py-8 max-w-2xl">
+              <div className="flex flex-col sm:flex-row gap-4 w-full justify-center px-2 py-4 max-w-2xl">
                 <button
                   onClick={generatePhysicalBill}
-                  className="group flex flex-col items-center justify-center p-8 rounded-3xl border-2 border-gray-100 bg-white hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 transition-all duration-300 w-full sm:w-64 gap-4"
+                  className="group flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-neutral-200 bg-white hover:border-black hover:shadow-xl hover:shadow-black/5 hover:-translate-y-1 transition-all duration-300 w-full sm:w-60 gap-3"
                 >
-                  <div className="w-20 h-20 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
-                    <IconPrinter size={40} className="group-hover:scale-110 transition-transform duration-300" />
+                  <div className="w-16 h-16 rounded-xl bg-neutral-100 flex items-center justify-center text-neutral-900 group-hover:bg-black group-hover:text-white transition-all duration-300">
+                    <IconPrinter size={32} className="group-hover:scale-110 transition-transform duration-300" />
                   </div>
                   <div className="flex flex-col items-center">
-                    <span className="font-black text-lg text-gray-800 tracking-tight">PRINT PHYSICAL</span>
-                    <span className="text-xs font-bold text-gray-400 mt-1">Thermal Receipt Printer</span>
+                    <span className="font-black text-sm text-neutral-900 tracking-tight uppercase">PRINT THERMAL</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 mt-0.5">Physical Receipt</span>
                   </div>
                 </button>
                 
                 <button
                   onClick={() => setReceiptMode("ebill")}
-                  className="group flex flex-col items-center justify-center p-8 rounded-3xl border-2 border-gray-100 bg-white hover:border-green-500 hover:shadow-xl hover:shadow-green-500/10 hover:-translate-y-1 transition-all duration-300 w-full sm:w-64 gap-4"
+                  className="group flex flex-col items-center justify-center p-6 rounded-2xl border-2 border-neutral-200 bg-white hover:border-black hover:shadow-xl hover:shadow-black/5 hover:-translate-y-1 transition-all duration-300 w-full sm:w-60 gap-3"
                 >
-                  <div className="w-20 h-20 rounded-2xl bg-green-50 flex items-center justify-center text-green-600 group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
-                    <IconSend size={40} className="group-hover:scale-110 transition-transform duration-300" />
+                  <div className="w-16 h-16 rounded-xl bg-neutral-100 flex items-center justify-center text-neutral-900 group-hover:bg-black group-hover:text-white transition-all duration-300">
+                    <IconSend size={32} className="group-hover:scale-110 transition-transform duration-300" />
                   </div>
                   <div className="flex flex-col items-center">
-                    <span className="font-black text-lg text-gray-800 tracking-tight">SEND eBILL SMS</span>
-                    <span className="text-xs font-bold text-gray-400 mt-1">Instant Digital Receipt</span>
+                    <span className="font-black text-sm text-neutral-900 tracking-tight uppercase">SEND eBILL SMS</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 mt-0.5">Instant Digital SMS</span>
                   </div>
                 </button>
               </div>
             )}
 
             {receiptMode === "physical" && invoiceUrl && (
-              <div className="w-full h-[500px] border border-gray-200 bg-gray-50 flex items-center justify-center relative rounded-xl overflow-hidden mt-4">
+              <div className="w-full h-[450px] border border-neutral-200 bg-neutral-100 flex items-center justify-center relative rounded-2xl overflow-hidden mt-2">
                 <iframe
                   src={invoiceUrl}
                   width="100%"
@@ -454,20 +477,20 @@ export default function POSPaymentForm() {
             )}
 
             {receiptMode === "ebill" && (
-              <div className="w-full flex flex-col gap-6 items-center max-w-sm mt-8 border-2 border-green-100 p-8 rounded-3xl bg-white shadow-sm">
-                <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center text-green-500 mb-2">
-                  <IconSend size={32} />
+              <div className="w-full flex flex-col gap-4 items-center max-w-sm mt-4 border-2 border-neutral-200 p-6 rounded-2xl bg-white shadow-sm">
+                <div className="w-12 h-12 rounded-xl bg-neutral-100 flex items-center justify-center text-neutral-900">
+                  <IconSend size={24} />
                 </div>
                 <div className="w-full">
-                  <p className="text-xs font-bold text-gray-500 tracking-wide uppercase mb-2">
+                  <p className="text-[11px] font-black uppercase tracking-[0.15em] text-neutral-500 mb-2">
                     Customer Phone Number
                   </p>
                   <Input
-                    placeholder="e.g. 077..."
+                    placeholder="e.g. 0771234567"
                     value={eBillPhone}
                     onChange={(e) => setEBillPhone(e.target.value)}
                     disabled={eBillSent}
-                    className="rounded-xl h-[48px] font-bold text-lg text-center"
+                    className="rounded-xl h-[46px] font-bold text-base text-center"
                   />
                 </div>
                 <Button
@@ -476,10 +499,9 @@ export default function POSPaymentForm() {
                   onClick={handleSendEBill}
                   loading={eBillSending}
                   disabled={eBillSent || !eBillPhone.trim()}
-                  className="rounded-xl h-[48px] w-full shadow-sm font-black tracking-widest text-base"
-                  style={{ backgroundColor: eBillSent ? "#16a34a" : "#16a34a" }}
+                  className="rounded-xl h-[46px] w-full shadow-md font-black tracking-widest text-xs uppercase text-white !bg-black hover:!bg-neutral-800 disabled:!bg-neutral-300 transition-all"
                 >
-                  {eBillSent ? "SMS SENT!" : "SEND RECIEPT"}
+                  {eBillSent ? "SMS SENT!" : "DISPATCH RECEIPT"}
                 </Button>
               </div>
             )}
@@ -487,26 +509,28 @@ export default function POSPaymentForm() {
         ) : (
           <div className="flex flex-col gap-4">
             {/* Payments Table */}
-            <Table
-              dataSource={payments}
-              columns={paymentColumns}
-              rowKey="id"
-              size="small"
-              pagination={false}
-              locale={{ emptyText: "No payments added yet" }}
-            />
+            <div className="border border-neutral-200/80 rounded-xl overflow-hidden">
+              <Table
+                dataSource={payments}
+                columns={paymentColumns}
+                rowKey="id"
+                size="small"
+                pagination={false}
+                locale={{ emptyText: "No payments added yet" }}
+              />
+            </div>
 
             {/* Add Payment Form */}
-            <div className="flex flex-wrap gap-3 items-end">
+            <div className="flex flex-wrap gap-2.5 items-end p-3.5 bg-neutral-50 border border-neutral-200/80 rounded-xl">
               <div className="flex flex-col gap-1">
-                <span className="text-xs font-bold text-gray-500 tracking-wide uppercase">
+                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500">
                   Method
                 </span>
                 <Select
                   value={selectedPaymentMethod}
                   onChange={(value) => setSelectedPaymentMethod(value)}
                   style={{ width: 140 }}
-                  className="[&_.ant-select-selector]:!rounded-xl h-[38px] font-semibold"
+                  className="[&_.ant-select-selector]:!rounded-xl h-[40px] font-bold"
                   options={availableMethods.map((m) => ({
                     value: m.name.toLowerCase(),
                     label: m.name,
@@ -516,14 +540,14 @@ export default function POSPaymentForm() {
 
               {selectedMethod && (selectedMethod.customerFee || 0) > 0 && (
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs font-bold text-gray-500 tracking-wide uppercase whitespace-nowrap">
+                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500 whitespace-nowrap">
                     Charge Fee ({selectedMethod.customerFee}%)
                   </span>
-                  <div className="flex items-center justify-center h-[38px] w-[120px] bg-gray-50 border border-gray-200 rounded-xl">
+                  <div className="flex items-center justify-center h-[40px] w-[120px] bg-white border border-neutral-200 rounded-xl">
                     <Switch
                       checked={chargeCustomerFee}
                       onChange={(checked) => setChargeCustomerFee(checked)}
-                      className={chargeCustomerFee ? "bg-green-600" : "bg-gray-300"}
+                      className={chargeCustomerFee ? "bg-black" : "bg-neutral-300"}
                     />
                   </div>
                 </div>
@@ -531,7 +555,7 @@ export default function POSPaymentForm() {
 
               {selectedPaymentMethod === "card" && (
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs font-bold text-gray-500 tracking-wide uppercase">
+                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500">
                     Last 4
                   </span>
                   <Input
@@ -539,39 +563,39 @@ export default function POSPaymentForm() {
                     onChange={(e) => setCardNumber(e.target.value.slice(0, 4))}
                     maxLength={4}
                     style={{ width: 80 }}
-                    className="rounded-xl h-[38px] font-semibold"
+                    className="rounded-xl h-[40px] font-mono font-bold"
                   />
                 </div>
               )}
 
               <div className="flex flex-col gap-1">
-                <span className="text-xs font-bold text-gray-500 tracking-wide uppercase">
-                  Pay ID
+                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500">
+                  Pay ID / Ref
                 </span>
                 <Input
                   value={referenceId}
                   onChange={(e) => setReferenceId(e.target.value)}
                   placeholder="Optional"
-                  style={{ width: 100 }}
-                  className="rounded-xl h-[38px]"
+                  style={{ width: 110 }}
+                  className="rounded-xl h-[40px] font-medium text-xs"
                 />
               </div>
 
               {hasCustomerFee ? (
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs font-bold text-green-600 tracking-wide uppercase whitespace-nowrap">
+                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-emerald-700 whitespace-nowrap">
                     Amount to Collect
                   </span>
-                  <div className="flex items-center h-[38px] w-[130px] px-3 bg-green-50 border border-green-200 rounded-xl">
-                    <span className="font-extrabold text-green-700 text-sm truncate">
+                  <div className="flex items-center h-[40px] w-[130px] px-3 bg-emerald-50 border border-emerald-300 rounded-xl">
+                    <span className="font-black text-emerald-800 text-sm truncate font-mono">
                       Rs. {preCalculatedAmount.toLocaleString()}
                     </span>
                   </div>
                 </div>
               ) : (
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs font-bold text-gray-500 tracking-wide uppercase">
-                    Amount
+                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500">
+                    Amount (Rs)
                   </span>
                   <InputNumber
                     value={
@@ -579,7 +603,7 @@ export default function POSPaymentForm() {
                     }
                     onChange={(val) => setPaymentAmount(val?.toString() || "")}
                     style={{ width: 120 }}
-                    className="rounded-xl h-[38px] text-base font-semibold pt-1"
+                    className="rounded-xl h-[40px] text-base font-black pt-0.5"
                     min={0}
                   />
                 </div>
@@ -589,61 +613,43 @@ export default function POSPaymentForm() {
                 type="primary"
                 icon={<IconPlus size={18} />}
                 onClick={handleAddPayment}
-                className="rounded-xl shadow-sm font-semibold"
-                style={{ backgroundColor: "#16a34a", height: 38 }}
+                className="rounded-xl shadow-sm font-black text-xs uppercase tracking-wider !bg-black hover:!bg-neutral-800 text-white"
+                style={{ height: 40 }}
               >
                 ADD
               </Button>
             </div>
 
-            <div className="border-t border-gray-200 pt-4" />
-
             {/* Summary */}
-            <div className="p-4 rounded-xl border border-gray-100 bg-gray-50 shadow-sm mt-2">
-              <div className="flex justify-between mb-1">
-                <span className="text-sm text-gray-600 uppercase font-semibold">
-                  Subtotal:
-                </span>
-                <span className="text-sm font-bold">
-                  Rs. {itemsTotal.toLocaleString()}
-                </span>
+            <div className="p-4 rounded-2xl border border-neutral-200/80 bg-neutral-50 shadow-sm mt-1">
+              <div className="flex justify-between mb-1.5 text-xs text-neutral-600 font-medium">
+                <span className="uppercase tracking-wider">Subtotal:</span>
+                <span className="font-bold text-neutral-900">Rs. {itemsTotal.toLocaleString()}</span>
               </div>
               {totalDiscount > 0 && (
-                <div className="flex justify-between mb-1 text-red-500">
-                  <span className="text-sm uppercase font-semibold">
-                    Discount:
-                  </span>
-                  <span className="text-sm font-bold">
-                    -Rs. {totalDiscount.toLocaleString()}
-                  </span>
+                <div className="flex justify-between mb-1.5 text-xs text-red-500 font-medium">
+                  <span className="uppercase tracking-wider">Discount:</span>
+                  <span className="font-bold">-Rs. {totalDiscount.toLocaleString()}</span>
                 </div>
               )}
               {customerFee > 0 && (
-                <div className="flex justify-between mb-1 p-2 bg-green-50 border border-dashed border-green-200 -mx-1">
-                  <span className="text-sm text-green-700 uppercase font-bold">
-                    Customer Fee:
-                  </span>
-                  <span className="text-sm font-extrabold text-green-700">
-                    Rs. {customerFee.toLocaleString()}
-                  </span>
+                <div className="flex justify-between mb-1.5 p-2 bg-emerald-50 border border-dashed border-emerald-200 rounded-lg -mx-1 text-xs text-emerald-700 font-bold">
+                  <span className="uppercase tracking-wider">Customer Fee:</span>
+                  <span>Rs. {customerFee.toLocaleString()}</span>
                 </div>
               )}
-              <div className="flex justify-between mb-1">
-                <span className="text-sm uppercase font-semibold">
-                  Total Paid:
-                </span>
-                <span className="text-sm font-bold">
-                  Rs. {paymentsTotal.toLocaleString()}
-                </span>
+              <div className="flex justify-between mb-1.5 text-xs text-neutral-600 font-medium">
+                <span className="uppercase tracking-wider">Total Paid:</span>
+                <span className="font-bold text-neutral-900">Rs. {paymentsTotal.toLocaleString()}</span>
               </div>
-              <div className="border-t border-gray-300 my-2" />
-              <div className="flex justify-between">
-                <span className="font-bold uppercase">
+              <div className="border-t-2 border-neutral-900 my-2.5" />
+              <div className="flex justify-between items-baseline">
+                <span className="font-black text-sm uppercase tracking-wider text-neutral-900">
                   {pendingDue > 0 ? "Due Amount:" : "Change Due:"}
                 </span>
                 <span
-                  className={`font-extrabold ${
-                    pendingDue > 0 ? "text-red-500" : "text-green-600"
+                  className={`font-black text-2xl tracking-tight ${
+                    pendingDue > 0 ? "text-red-500" : "text-emerald-600"
                   }`}
                 >
                   Rs. {Math.abs(pendingDue).toLocaleString()}
@@ -655,10 +661,10 @@ export default function POSPaymentForm() {
       </div>
 
       {/* Footer */}
-      <div className="flex justify-end gap-3 p-5 border-t border-gray-100 bg-gray-50/30 rounded-b-2xl">
+      <div className="flex justify-end gap-3 p-5 border-t border-neutral-100 bg-neutral-50/50 rounded-b-2xl">
         <Button
           onClick={handleClose}
-          className="h-12 px-6 rounded-xl font-semibold text-gray-600"
+          className="h-12 px-6 rounded-xl font-bold text-xs uppercase tracking-wider text-neutral-600 hover:bg-neutral-200/70 border-transparent"
         >
           {completedOrder ? "CLOSE" : "CANCEL"}
         </Button>
@@ -668,8 +674,7 @@ export default function POSPaymentForm() {
             onClick={handlePlaceOrder}
             disabled={paymentsTotal < subtotal || loading}
             icon={<IconPrinter size={18} />}
-            className="h-12 px-8 rounded-xl font-bold shadow-sm"
-            style={{ backgroundColor: "#16a34a" }}
+            className="h-12 px-8 rounded-xl font-black shadow-lg text-xs uppercase tracking-widest text-white !bg-black hover:!bg-neutral-800 disabled:!bg-neutral-300 transition-all"
           >
             COMPLETE ORDER
           </Button>
@@ -679,8 +684,7 @@ export default function POSPaymentForm() {
             type="primary"
             onClick={() => window.open(invoiceUrl, "_blank")}
             icon={<IconPrinter size={18} />}
-            className="h-12 px-8 rounded-xl font-bold shadow-sm"
-            style={{ backgroundColor: "#16a34a" }}
+            className="h-12 px-8 rounded-xl font-black shadow-lg text-xs uppercase tracking-widest text-white !bg-black hover:!bg-neutral-800 transition-all"
           >
             OPEN PDF
           </Button>

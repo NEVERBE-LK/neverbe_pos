@@ -151,34 +151,34 @@ export default function POSCredentialVerifyAndRequestAuthorizeForm({
         onCancel();
       }}
       footer={null}
-      width={400}
+      width={420}
       title={null}
       zIndex={3000}
-      className="[&_.ant-modal-content]:!rounded-3xl [&_.ant-modal-content]:!p-0 overflow-hidden"
+      className="[&_.ant-modal-content]:!rounded-3xl [&_.ant-modal-content]:!p-0 overflow-hidden shadow-2xl"
     >
-      <div className="border-b border-gray-100 bg-gray-50/50 p-6">
+      <div className="border-b border-neutral-100 bg-neutral-900 text-white p-6">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-amber-50 rounded-xl flex items-center justify-center text-amber-600">
-            <IconLock size={22} />
+          <div className="w-10 h-10 bg-neutral-800 rounded-xl flex items-center justify-center text-white">
+            <IconLock size={20} />
           </div>
           <div>
-            <h3 className="text-lg font-black text-gray-900 leading-tight">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 block mb-0.5">
+              CLEARANCE OVERRIDE
+            </span>
+            <h3 className="text-lg font-black text-white leading-tight">
               {title}
             </h3>
-            <p className="text-xs text-gray-400 font-bold uppercase tracking-wider mt-0.5">
-              Security Verification Required
-            </p>
           </div>
         </div>
       </div>
 
       <div className="p-6 space-y-4">
-        <p className="text-sm text-gray-600 font-medium">
+        <p className="text-xs text-neutral-500 font-medium leading-relaxed">
           {description}
         </p>
 
         <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+          <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest ml-1">
             Email Address
           </label>
           <Input
@@ -187,13 +187,13 @@ export default function POSCredentialVerifyAndRequestAuthorizeForm({
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="admin@neverbe.com"
-            prefix={<IconMail size={18} className="text-gray-400 mr-2" />}
-            className="h-12 rounded-xl border-gray-200"
+            prefix={<IconMail size={18} className="text-neutral-400 mr-2" />}
+            className="h-12 rounded-xl border-neutral-200 font-medium"
           />
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[10px] font-bold text-gray-400 uppercase tracking-widest ml-1">
+          <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest ml-1">
             Password
           </label>
           <Input.Password
@@ -201,20 +201,20 @@ export default function POSCredentialVerifyAndRequestAuthorizeForm({
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             placeholder="••••••••"
-            className="h-12 rounded-xl border-gray-200"
+            className="h-12 rounded-xl border-neutral-200 font-medium"
             onKeyDown={(e) => {
               if (e.key === "Enter") handleVerify();
             }}
           />
         </div>
 
-        <div className="flex justify-end gap-3 pt-3 border-t border-gray-50">
+        <div className="flex justify-end gap-3 pt-3 border-t border-neutral-100">
           <Button
             onClick={() => {
               setPassword("");
               onCancel();
             }}
-            className="h-12 px-6 rounded-xl hover:bg-gray-100 border-transparent text-gray-600 font-semibold"
+            className="h-12 px-6 rounded-xl hover:bg-neutral-100 border-transparent text-neutral-600 font-bold text-xs uppercase tracking-wider"
           >
             Cancel
           </Button>
@@ -222,9 +222,9 @@ export default function POSCredentialVerifyAndRequestAuthorizeForm({
             type="primary"
             loading={loading}
             onClick={handleVerify}
-            className="h-12 px-8 rounded-xl font-bold bg-amber-600 hover:bg-amber-500 border-none shadow-md shadow-amber-500/20"
+            className="h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest text-white !bg-black hover:!bg-neutral-800 border-none shadow-md"
           >
-            Verify
+            Authorize
           </Button>
         </div>
       </div>

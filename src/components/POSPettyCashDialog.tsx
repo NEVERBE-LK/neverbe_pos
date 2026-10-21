@@ -178,15 +178,15 @@ export default function POSPettyCashDialog({ open, onClose }: POSPettyCashDialog
       centered
       title={
         <div className="flex items-center gap-3 py-2">
-          <div className="w-10 h-10 bg-green-50 rounded-xl flex items-center justify-center">
-            <IconCash size={24} className="text-green-600" />
+          <div className="w-10 h-10 bg-neutral-900 rounded-xl flex items-center justify-center text-white">
+            <IconCash size={22} />
           </div>
           <div className="flex flex-col">
-            <Text className="text-lg font-black tracking-tight text-gray-900 leading-none">
-              Petty Cash Management
-            </Text>
-            <Text type="secondary" className="text-[10px] uppercase font-bold tracking-[0.1em] mt-1">
-              Monthly Transactions & Expenses
+            <span className="text-[10px] uppercase font-black tracking-[0.2em] text-neutral-400">
+              CASH MANAGEMENT
+            </span>
+            <Text className="text-lg font-black tracking-tight text-neutral-900 leading-none">
+              Petty Cash & Expense Control
             </Text>
           </div>
         </div>
@@ -196,9 +196,9 @@ export default function POSPettyCashDialog({ open, onClose }: POSPettyCashDialog
       <div className="flex flex-col gap-8">
         {/* Form Section (Top) */}
         <div className="w-full space-y-6">
-          <div className="bg-gray-50/50 p-5 rounded-2xl border border-gray-100 shadow-sm transition-all hover:shadow-md">
-            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-gray-400 mb-5 border-b border-gray-100 pb-2 flex items-center gap-2">
-              <IconPlus size={14} /> New Expense
+          <div className="bg-neutral-50/70 p-6 rounded-2xl border border-neutral-200/80 shadow-sm">
+            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-neutral-500 mb-5 border-b border-neutral-200 pb-2 flex items-center gap-2">
+              <IconPlus size={14} /> New Expense Transaction
             </h3>
             <Form form={form} layout="vertical" onFinish={handleFinish} requiredMark={false} initialValues={{ type: "expense", paymentMethod: "cash", date: dayjs() }}>
               <Row gutter={16}>
@@ -265,7 +265,7 @@ export default function POSPettyCashDialog({ open, onClose }: POSPettyCashDialog
                   onChange={({ fileList }) => setFileList(fileList.slice(-1))}
                   maxCount={1}
                 >
-                  <Button icon={<IconFileUpload size={18} />} className="w-full h-11 rounded-xl border-dashed border-gray-300 hover:border-green-500 hover:text-green-600 transition-all">
+                  <Button icon={<IconFileUpload size={18} />} className="w-full h-11 rounded-xl border-dashed border-neutral-300 hover:border-black hover:text-black transition-all">
                     Select Receipt / File
                   </Button>
                 </Upload>
@@ -276,8 +276,8 @@ export default function POSPettyCashDialog({ open, onClose }: POSPettyCashDialog
                   type="primary"
                   htmlType="submit"
                   loading={loading}
-                  className="w-full h-12 bg-black hover:bg-gray-800 border-none rounded-xl font-bold flex items-center justify-center gap-2 shadow-lg shadow-black/10 transition-all hover:scale-[1.02]"
-                  icon={<IconPlus size={20} />}
+                  className="w-full h-12 !bg-black hover:!bg-neutral-800 border-none rounded-xl font-black text-xs uppercase tracking-widest text-white flex items-center justify-center gap-2 shadow-lg shadow-black/10 transition-all hover:scale-[1.01]"
+                  icon={<IconPlus size={18} />}
                 >
                   Save Transaction
                 </Button>
@@ -285,8 +285,8 @@ export default function POSPettyCashDialog({ open, onClose }: POSPettyCashDialog
             </Form>
           </div>
 
-          <div className="p-4 bg-green-50 border border-green-100 rounded-2xl text-[10px] text-green-800 font-bold leading-relaxed shadow-sm">
-            Note: Recent transactions update monthly reports. Ensure receipts are attached.
+          <div className="p-4 bg-neutral-100 border border-neutral-200 rounded-2xl text-[11px] text-neutral-600 font-bold leading-relaxed">
+            Note: Recent transactions update monthly reports. Ensure receipts are attached for accounting verification.
           </div>
         </div>
 

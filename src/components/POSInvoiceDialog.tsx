@@ -234,8 +234,7 @@ export default function POSInvoiceDialog({
           type="primary"
           onClick={handlePrint}
           icon={<IconPrinter size={18} />}
-          className="h-10 px-6 rounded-xl font-medium shadow-sm"
-          style={{ backgroundColor: "#16a34a" }}
+          className="h-10 px-6 rounded-xl font-black text-xs uppercase tracking-wider shadow-md text-white !bg-black hover:!bg-neutral-800"
         >
           Print
         </Button>
@@ -250,7 +249,7 @@ export default function POSInvoiceDialog({
           setInvoiceUrl(null);
           setReceiptMode("choice");
         }}
-        className="h-10 px-6 rounded-xl font-medium"
+        className="h-10 px-6 rounded-xl font-bold text-xs uppercase tracking-wider text-neutral-600 hover:bg-neutral-100"
       >
         Back to Search
       </Button>
@@ -260,7 +259,7 @@ export default function POSInvoiceDialog({
       <Button
         key="close-modal"
         onClick={handleClose}
-        className="h-10 px-6 rounded-xl font-medium"
+        className="h-10 px-6 rounded-xl font-bold text-xs uppercase tracking-wider text-neutral-600 hover:bg-neutral-100"
       >
         Close
       </Button>
@@ -273,35 +272,40 @@ export default function POSInvoiceDialog({
       onCancel={handleClose}
       width={selectedOrder ? 800 : 700}
       footer={
-        <div className="flex justify-end gap-3 p-4 border-t border-gray-100 bg-gray-50/30">
+        <div className="flex justify-end gap-3 p-4 border-t border-neutral-100 bg-neutral-50/50">
           {footerButtons}
         </div>
       }
       closeIcon={null}
       styles={{ body: { padding: 0 } }}
-      className="[&_.ant-modal-content]:!rounded-2xl [&_.ant-modal-content]:!border-0 [&_.ant-modal-content]:!shadow-xl [&_.ant-modal-content]:!p-0 overflow-hidden"
+      className="[&_.ant-modal-content]:!rounded-3xl [&_.ant-modal-content]:!border-0 [&_.ant-modal-content]:!shadow-2xl [&_.ant-modal-content]:!p-0 overflow-hidden"
     >
       {/* Header */}
-      <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-gray-50/50 rounded-t-2xl">
-        <div className="flex items-center gap-2">
+      <div className="flex justify-between items-center p-6 border-b border-neutral-100 bg-neutral-900 text-white">
+        <div className="flex items-center gap-3">
           {selectedOrder && receiptMode !== "choice" && (
             <button
               onClick={() => {
                 setReceiptMode("choice");
                 setInvoiceUrl(null);
               }}
-              className="text-gray-500 hover:text-gray-700 mr-1 transition-all"
+              className="text-neutral-400 hover:text-white mr-1 transition-all"
             >
               <IconArrowLeft size={20} />
             </button>
           )}
-          <h2 className="text-xl font-bold text-gray-800">
-            {selectedOrder ? "Receipt Method" : "Search Invoices"}
-          </h2>
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 block mb-0.5">
+              ORDER REPRINT & ARCHIVE
+            </span>
+            <h2 className="text-xl font-black text-white tracking-tight leading-tight">
+              {selectedOrder ? "Receipt Dispatch" : "Search Invoices"}
+            </h2>
+          </div>
         </div>
         <button
           onClick={handleClose}
-          className="flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all"
+          className="flex items-center justify-center w-8 h-8 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all"
         >
           <IconX size={20} />
         </button>
@@ -311,47 +315,50 @@ export default function POSInvoiceDialog({
       <div className="p-0">
         {selectedOrder ? (
           <div className="flex flex-col items-center p-6 bg-white min-h-[450px]">
-            <div className="text-center w-full bg-blue-50/80 border border-blue-200 rounded-2xl p-6 mb-6">
-              <h3 className="text-blue-700 font-extrabold text-2xl mb-1">
-                Found Invoice #{selectedOrder.orderId}
+            <div className="text-center w-full bg-neutral-950 text-white border border-neutral-800 rounded-2xl p-6 mb-6">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 block mb-1">
+                ARCHIVED TRANSACTION
+              </span>
+              <h3 className="text-white font-black text-2xl tracking-tight mb-1">
+                Invoice #{selectedOrder.orderId?.toUpperCase()}
               </h3>
-              <p className="text-blue-600 font-medium">
-                How would you like to provide the receipt to the customer?
+              <p className="text-neutral-400 text-xs font-semibold uppercase tracking-wider">
+                Select dispatch format for customer receipt
               </p>
             </div>
 
             {receiptMode === "choice" && (
-              <div className="flex flex-col sm:flex-row gap-6 w-full justify-center px-4 py-8 max-w-2xl">
+              <div className="flex flex-col sm:flex-row gap-4 w-full justify-center px-4 py-8 max-w-2xl">
                 <button
                   onClick={generatePhysicalBill}
-                  className="group flex flex-col items-center justify-center p-8 rounded-3xl border-2 border-gray-100 bg-white hover:border-blue-500 hover:shadow-xl hover:shadow-blue-500/10 hover:-translate-y-1 transition-all duration-300 w-full sm:w-64 gap-4"
+                  className="group flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-neutral-200 bg-white hover:border-black hover:shadow-xl hover:shadow-black/5 hover:-translate-y-1 transition-all duration-300 w-full sm:w-64 gap-4"
                 >
-                  <div className="w-20 h-20 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
-                    <IconPrinter size={40} className="group-hover:scale-110 transition-transform duration-300" />
+                  <div className="w-18 h-18 rounded-2xl bg-neutral-100 flex items-center justify-center text-neutral-900 group-hover:bg-black group-hover:text-white transition-all duration-300">
+                    <IconPrinter size={36} className="group-hover:scale-110 transition-transform duration-300" />
                   </div>
                   <div className="flex flex-col items-center">
-                    <span className="font-black text-lg text-gray-800 tracking-tight">PRINT PHYSICAL</span>
-                    <span className="text-xs font-bold text-gray-400 mt-1">Thermal Receipt Printer</span>
+                    <span className="font-black text-sm text-neutral-900 tracking-tight uppercase">PRINT THERMAL</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 mt-1">Receipt Printer</span>
                   </div>
                 </button>
                 
                 <button
                   onClick={() => setReceiptMode("ebill")}
-                  className="group flex flex-col items-center justify-center p-8 rounded-3xl border-2 border-gray-100 bg-white hover:border-green-500 hover:shadow-xl hover:shadow-green-500/10 hover:-translate-y-1 transition-all duration-300 w-full sm:w-64 gap-4"
+                  className="group flex flex-col items-center justify-center p-8 rounded-2xl border-2 border-neutral-200 bg-white hover:border-black hover:shadow-xl hover:shadow-black/5 hover:-translate-y-1 transition-all duration-300 w-full sm:w-64 gap-4"
                 >
-                  <div className="w-20 h-20 rounded-2xl bg-green-50 flex items-center justify-center text-green-600 group-hover:bg-green-600 group-hover:text-white transition-all duration-300">
-                    <IconSend size={40} className="group-hover:scale-110 transition-transform duration-300" />
+                  <div className="w-18 h-18 rounded-2xl bg-neutral-100 flex items-center justify-center text-neutral-900 group-hover:bg-black group-hover:text-white transition-all duration-300">
+                    <IconSend size={36} className="group-hover:scale-110 transition-transform duration-300" />
                   </div>
                   <div className="flex flex-col items-center">
-                    <span className="font-black text-lg text-gray-800 tracking-tight">SEND eBILL SMS</span>
-                    <span className="text-xs font-bold text-gray-400 mt-1">Instant Digital Receipt</span>
+                    <span className="font-black text-sm text-neutral-900 tracking-tight uppercase">SEND eBILL SMS</span>
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-neutral-400 mt-1">Instant Digital Receipt</span>
                   </div>
                 </button>
               </div>
             )}
 
             {receiptMode === "physical" && invoiceUrl && (
-              <div className="w-full h-[400px] border border-gray-200 bg-gray-50 flex items-center justify-center relative rounded-xl overflow-hidden">
+              <div className="w-full h-[400px] border border-neutral-200 bg-neutral-100 flex items-center justify-center relative rounded-2xl overflow-hidden">
                 <iframe
                   src={invoiceUrl}
                   width="100%"
@@ -363,12 +370,12 @@ export default function POSInvoiceDialog({
             )}
 
             {receiptMode === "ebill" && (
-              <div className="w-full flex flex-col gap-6 items-center max-w-sm mt-8 border-2 border-green-100 p-8 rounded-3xl bg-white shadow-sm">
-                <div className="w-16 h-16 rounded-full bg-green-50 flex items-center justify-center text-green-500 mb-2">
-                  <IconSend size={32} />
+              <div className="w-full flex flex-col gap-4 items-center max-w-sm mt-6 border-2 border-neutral-200 p-6 rounded-2xl bg-white shadow-sm">
+                <div className="w-14 h-14 rounded-xl bg-neutral-100 flex items-center justify-center text-neutral-900 mb-1">
+                  <IconSend size={28} />
                 </div>
                 <div className="w-full">
-                  <p className="text-xs font-bold text-gray-500 tracking-wide uppercase mb-2">
+                  <p className="text-[11px] font-black uppercase tracking-[0.15em] text-neutral-500 mb-2">
                     Customer Phone Number
                   </p>
                   <Input
@@ -376,7 +383,7 @@ export default function POSInvoiceDialog({
                     value={eBillPhone}
                     onChange={(e) => setEBillPhone(e.target.value)}
                     disabled={eBillSent}
-                    className="rounded-xl h-[48px] font-bold text-lg text-center"
+                    className="rounded-xl h-[46px] font-bold text-base text-center"
                   />
                 </div>
                 <Button
@@ -385,15 +392,15 @@ export default function POSInvoiceDialog({
                   onClick={handleSendEBill}
                   loading={eBillSending}
                   disabled={eBillSent || !eBillPhone.trim()}
-                  className="rounded-xl h-[48px] w-full shadow-sm font-black tracking-widest text-base bg-green-600 border-none hover:bg-green-500 disabled:bg-green-500"
+                  className="rounded-xl h-[46px] w-full shadow-md font-black tracking-widest text-xs uppercase text-white !bg-black hover:!bg-neutral-800 disabled:!bg-neutral-300 border-none transition-all"
                 >
-                  {eBillSent ? "SMS SENT!" : "SEND RECIEPT"}
+                  {eBillSent ? "SMS SENT!" : "DISPATCH RECEIPT"}
                 </Button>
                 {eBillSent && (
                    <Button 
                     type="link" 
                     onClick={() => {setEBillSent(false); setEBillPhone("");}}
-                    className="text-gray-400 text-xs"
+                    className="text-neutral-500 font-bold text-xs"
                    >
                      Send to another number
                    </Button>
@@ -402,7 +409,7 @@ export default function POSInvoiceDialog({
             )}
           </div>
         ) : (
-          <div className="flex flex-col gap-4 p-4">
+          <div className="flex flex-col gap-4 p-6">
             {/* Search Bar */}
             <div className="flex gap-2">
               <Input
@@ -411,19 +418,16 @@ export default function POSInvoiceDialog({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyPress={handleKeyPress}
-                prefix={<IconSearch size={18} className="text-gray-400" />}
-                className="rounded-xl"
+                prefix={<IconSearch size={18} className="text-neutral-400" />}
+                className="rounded-xl font-medium"
               />
               <Button
                 type="primary"
                 size="large"
                 onClick={handleSearch}
                 loading={loading}
-                className="rounded-xl font-semibold shadow-sm"
-                style={{
-                  backgroundColor: "#16a34a",
-                  minWidth: 100,
-                }}
+                className="rounded-xl font-black text-xs uppercase tracking-wider shadow-md text-white !bg-black hover:!bg-neutral-800"
+                style={{ minWidth: 100 }}
               >
                 Search
               </Button>

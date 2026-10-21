@@ -474,17 +474,24 @@ export default function POSExchangeDialog({
       width={1000}
       footer={null}
       closeIcon={null}
-      className="[&_.ant-modal-content]:!rounded-2xl [&_.ant-modal-content]:!border-0 [&_.ant-modal-content]:!shadow-xl [&_.ant-modal-content]:!p-0 [&_.ant-modal-content]:!max-h-[90vh]"
+      className="[&_.ant-modal-content]:!rounded-3xl [&_.ant-modal-content]:!border-0 [&_.ant-modal-content]:!shadow-2xl [&_.ant-modal-content]:!p-0 [&_.ant-modal-content]:!max-h-[90vh] overflow-hidden"
     >
       {/* Header */}
-      <div className="flex justify-between items-center p-5 border-b border-gray-100 bg-gray-50/50 rounded-t-2xl">
-        <div className="flex items-center gap-2">
-          <IconArrowsExchange size={24} className="text-gray-600" />
-          <h2 className="text-xl font-bold text-gray-800">Item Exchange</h2>
+      <div className="flex justify-between items-center p-6 border-b border-neutral-100 bg-neutral-900 text-white">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-neutral-800 flex items-center justify-center text-white">
+            <IconArrowsExchange size={22} />
+          </div>
+          <div>
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 block mb-0.5">
+              RETURN & EXCHANGE PROTOCOL
+            </span>
+            <h2 className="text-xl font-black text-white tracking-tight leading-tight">Item Exchange</h2>
+          </div>
         </div>
         <button
           onClick={handleClose}
-          className="flex items-center justify-center w-8 h-8 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-all"
+          className="flex items-center justify-center w-8 h-8 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all"
         >
           <IconX size={20} />
         </button>
@@ -492,34 +499,36 @@ export default function POSExchangeDialog({
 
       {/* Content */}
       <div
-        className="p-4 overflow-y-auto"
+        className="p-6 overflow-y-auto"
         style={{ maxHeight: "calc(90vh - 140px)" }}
       >
         {success ? (
           <div className="text-center py-8">
-            <IconCheck size={64} className="text-green-600 mx-auto" />
-            <h3 className="text-xl font-extrabold mt-2">EXCHANGE COMPLETED</h3>
-            <p className="text-gray-500 mt-1">
-              The exchange has been processed successfully.
+            <div className="w-16 h-16 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center mx-auto mb-3">
+              <IconCheck size={36} />
+            </div>
+            <h3 className="text-xl font-black tracking-tight mt-2 text-neutral-900">EXCHANGE COMPLETED</h3>
+            <p className="text-neutral-500 text-xs mt-1 font-medium">
+              The exchange has been processed and inventory updated successfully.
             </p>
             {priceDifference < 0 ? (
-              <div className="mt-4 p-4 rounded-xl border border-emerald-200 bg-emerald-50 inline-block">
-                <p className="font-bold text-emerald-800 text-base">
+              <div className="mt-5 p-5 rounded-2xl border border-emerald-300 bg-emerald-50 inline-block shadow-sm">
+                <p className="font-black text-emerald-800 text-base">
                   STORE CREDIT CREATED: Rs. {Math.abs(priceDifference).toLocaleString()}
                 </p>
                 <p className="text-xs text-emerald-600 font-mono mt-0.5">
-                  Order #{orderData?.orderId} • Store credit balance registered
+                  Order #{orderData?.orderId} • Store credit registered
                 </p>
               </div>
             ) : priceDifference > 0 ? (
-              <div className="mt-4 p-4 rounded-xl border border-amber-200 bg-amber-50 inline-block">
-                <p className="font-bold text-amber-800 text-base">
+              <div className="mt-5 p-5 rounded-2xl border border-amber-300 bg-amber-50 inline-block shadow-sm">
+                <p className="font-black text-amber-900 text-base">
                   CUSTOMER OWES: Rs. {priceDifference.toLocaleString()} ({paymentMethod})
                 </p>
               </div>
             ) : (
-              <div className="mt-4 p-4 rounded-xl border border-slate-200 bg-slate-50 inline-block">
-                <p className="font-bold text-slate-700 text-base">
+              <div className="mt-5 p-5 rounded-2xl border border-neutral-300 bg-neutral-100 inline-block shadow-sm">
+                <p className="font-black text-neutral-800 text-base">
                   EVEN EXCHANGE COMPLETED (NO BALANCE DUE)
                 </p>
               </div>
@@ -527,17 +536,15 @@ export default function POSExchangeDialog({
             <Button
               type="primary"
               onClick={handleClose}
-              className="mt-6 h-12 px-8 rounded-xl font-semibold shadow-sm text-base block mx-auto"
-              style={{ backgroundColor: "#16a34a" }}
+              className="mt-6 h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest text-white !bg-black hover:!bg-neutral-800 block mx-auto"
             >
               Close
             </Button>
           </div>
         ) : !orderData ? (
           <div>
-            <p className="text-sm text-gray-500 mb-3">
-              Enter the order ID to look up and verify eligibility (within 14
-              working days)
+            <p className="text-xs font-semibold text-neutral-500 mb-3 uppercase tracking-wider">
+              Enter the order ID to look up and verify eligibility (within 14 working days)
             </p>
             <div className="flex gap-2">
               <Input
@@ -546,7 +553,7 @@ export default function POSExchangeDialog({
                 value={orderId}
                 onChange={(e) => setOrderId(e.target.value)}
                 onPressEnter={handleSearchOrder}
-                className="rounded-xl font-medium"
+                className="rounded-xl font-mono font-bold"
               />
               <Button
                 type="primary"
@@ -554,9 +561,8 @@ export default function POSExchangeDialog({
                 onClick={handleSearchOrder}
                 loading={loading}
                 disabled={!orderId.trim()}
-                className="rounded-xl font-semibold shadow-sm"
+                className="rounded-xl font-black text-xs uppercase tracking-wider shadow-md text-white !bg-black hover:!bg-neutral-800"
                 style={{
-                  backgroundColor: "#16a34a",
                   minWidth: 100,
                 }}
               >
@@ -630,28 +636,28 @@ export default function POSExchangeDialog({
                     placeholder="Search replacement product..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    style={{ borderRadius: 0 }}
+                    className="rounded-xl font-medium"
                   />
                   <Button
                     type="primary"
                     htmlType="submit"
                     loading={searching}
-                    style={{ borderRadius: 0, backgroundColor: "#16a34a" }}
+                    className="rounded-xl font-black text-xs uppercase tracking-wider shadow-md text-white !bg-black hover:!bg-neutral-800"
                   >
                     <IconSearch size={18} />
                   </Button>
                 </form>
 
                 {searchResults.length > 0 && (
-                  <div className="max-h-48 overflow-y-auto border border-gray-200 mb-3">
+                  <div className="max-h-48 overflow-y-auto border border-neutral-200 rounded-xl mb-3 overflow-hidden">
                     {searchResults.map((prod) => (
                       <div
                         key={prod.id}
                         onClick={() => handleSelectProduct(prod)}
-                        className="p-2 cursor-pointer hover:bg-green-50 flex justify-between border-b border-gray-100"
+                        className="p-2.5 cursor-pointer hover:bg-neutral-100 flex justify-between border-b border-neutral-100 last:border-b-0 transition-colors"
                       >
-                        <p className="font-semibold">{prod.name}</p>
-                        <p className="text-sm font-bold">
+                        <p className="font-bold text-sm text-neutral-900">{prod.name}</p>
+                        <p className="text-sm font-black text-neutral-900">
                           Rs. {prod.sellingPrice?.toLocaleString()}
                         </p>
                       </div>
@@ -675,8 +681,8 @@ export default function POSExchangeDialog({
                     type="info"
                   />
                 )}
-                <p className="font-bold mt-2">
-                  Replacement Value: Rs. {replacementTotal.toLocaleString()}
+                <p className="font-black text-xs uppercase tracking-wider mt-2 text-neutral-800">
+                  Replacement Value: <span className="font-mono text-sm">Rs. {replacementTotal.toLocaleString()}</span>
                 </p>
               </div>
             </div>
@@ -686,28 +692,28 @@ export default function POSExchangeDialog({
               placeholder="Notes (optional)"
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
-              style={{ borderRadius: 0 }}
+              className="rounded-xl font-medium"
             />
 
             {/* Price Difference Summary */}
-            <div className="border-t border-gray-100 pt-4 mt-2">
+            <div className="border-t border-neutral-100 pt-4 mt-2">
               <div
                 className={`p-5 rounded-2xl border flex justify-between items-center shadow-sm ${
                   priceDifference < 0
-                    ? "bg-emerald-50 border-emerald-200"
+                    ? "bg-emerald-50 border-emerald-300"
                     : priceDifference > 0
-                    ? "bg-amber-50 border-amber-200"
-                    : "bg-slate-50 border-slate-200"
+                    ? "bg-amber-50 border-amber-300"
+                    : "bg-neutral-100 border-neutral-300"
                 }`}
               >
                 <div>
                   <p
-                    className={`text-lg font-bold tracking-tight ${
+                    className={`text-sm font-black tracking-wider uppercase ${
                       priceDifference < 0
                         ? "text-emerald-800"
                         : priceDifference > 0
-                        ? "text-amber-800"
-                        : "text-slate-800"
+                        ? "text-amber-900"
+                        : "text-neutral-800"
                     }`}
                   >
                     {priceDifference < 0
@@ -717,18 +723,18 @@ export default function POSExchangeDialog({
                       : "EVEN EXCHANGE (BALANCED)"}
                   </p>
                   {priceDifference < 0 && (
-                    <p className="text-xs text-emerald-600 font-medium">
+                    <p className="text-xs text-emerald-700 font-medium mt-0.5">
                       Store credit balance of Rs. {Math.abs(priceDifference).toLocaleString()} will be issued to customer.
                     </p>
                   )}
                 </div>
                 <p
-                  className={`text-3xl font-black tracking-tight font-mono ${
+                  className={`text-2xl font-black tracking-tight font-mono ${
                     priceDifference < 0
-                      ? "text-emerald-600"
+                      ? "text-emerald-700"
                       : priceDifference > 0
-                      ? "text-amber-600"
-                      : "text-slate-600"
+                      ? "text-amber-700"
+                      : "text-neutral-700"
                   }`}
                 >
                   Rs. {Math.abs(priceDifference).toLocaleString()}
@@ -738,8 +744,8 @@ export default function POSExchangeDialog({
 
             {/* Payment Method Selection for Outstanding Balance */}
             {priceDifference > 0 && (
-              <div className="p-3 border border-gray-200 rounded-xl">
-                <p className="text-xs font-bold uppercase mb-2 text-slate-700">
+              <div className="p-4 border border-neutral-200/80 rounded-2xl bg-neutral-50/50">
+                <p className="text-[10px] font-black uppercase tracking-[0.15em] mb-2.5 text-neutral-500">
                   Select Payment Method for Outstanding Balance
                 </p>
                 <div className="flex gap-2 flex-wrap">
@@ -747,10 +753,10 @@ export default function POSExchangeDialog({
                     <button
                       key={pm.paymentId}
                       onClick={() => setPaymentMethod(pm.name)}
-                      className={`px-3 py-1.5 border-2 rounded-lg font-bold text-xs ${
+                      className={`px-4 py-2 border-2 rounded-xl font-black text-xs uppercase tracking-wider transition-all ${
                         paymentMethod === pm.name
-                          ? "border-green-600 bg-green-600 text-white"
-                          : "border-gray-300 hover:border-green-600 text-gray-700"
+                          ? "border-black bg-black text-white shadow-md shadow-black/10"
+                          : "border-neutral-300 hover:border-black text-neutral-800 bg-white"
                       }`}
                     >
                       {pm.name}
@@ -770,10 +776,10 @@ export default function POSExchangeDialog({
 
       {/* Footer */}
       {orderData && !success && (
-        <div className="flex justify-end gap-3 p-5 border-t border-gray-100 bg-gray-50/30 rounded-b-2xl">
+        <div className="flex justify-end gap-3 p-5 border-t border-neutral-100 bg-neutral-50/50 rounded-b-3xl">
           <Button
             onClick={handleClose}
-            className="h-12 px-6 rounded-xl font-medium text-gray-600 hover:bg-gray-100 border-transparent"
+            className="h-12 px-6 rounded-xl font-bold text-xs uppercase tracking-wider text-neutral-600 hover:bg-neutral-200/70 border-transparent"
           >
             Cancel
           </Button>
@@ -785,10 +791,9 @@ export default function POSExchangeDialog({
               returnedItems.length === 0 ||
               (priceDifference > 0 && !paymentMethod)
             }
-            className="h-12 px-8 rounded-xl font-semibold shadow-sm tracking-wide"
+            className="h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest text-white shadow-md !bg-black hover:!bg-neutral-800 disabled:!bg-neutral-300 transition-all"
             style={{
-              backgroundColor: "#16a34a",
-              minWidth: 150,
+              minWidth: 160,
             }}
           >
             PROCESS EXCHANGE

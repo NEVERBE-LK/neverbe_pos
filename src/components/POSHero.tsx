@@ -8,6 +8,7 @@ import {
   IconArrowsExchange,
   IconLogout,
   IconCash,
+  IconMapPin,
 } from "@tabler/icons-react";
 import { usePOS } from "../context/POSContext";
 import POSInvoiceDialog from "./POSInvoiceDialog";
@@ -18,6 +19,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/firebase/firebaseClient";
 import toast from "react-hot-toast";
 import POSCredentialVerifyAndRequestAuthorizeForm from "./POSCredentialVerifyAndRequestAuthorizeForm";
+import BrandLogo from "./BrandLogo";
 
 export default function POSHero() {
   const {
@@ -28,7 +30,6 @@ export default function POSHero() {
     loadProducts,
     isOnline,
     offlineQueue,
-    todayOrdersCount,
   } = usePOS();
 
   const currentStock = stocks?.find?.((s) => s.id === selectedStockId);
@@ -124,107 +125,126 @@ export default function POSHero() {
 
   return (
     <>
-      <div className="flex flex-col gap-4">
-        {/* Top Header Row */}
-        <div className="p-4 flex flex-col gap-3 bg-white rounded-2xl shadow-sm border border-gray-100">
-          {/* Status Badges - horizontally scrollable on mobile */}
-          <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pb-1 -mb-1">
+      <div className="flex flex-col gap-3">
+        {/* Top Header Row with Brand & Status */}
+        <div className="p-3.5 sm:p-4 flex flex-col md:flex-row md:items-center justify-between gap-3 bg-white rounded-2xl shadow-sm border border-neutral-200/80">
+          {/* Brand Logo & Location */}
+          <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pb-0.5">
+            <div className="flex items-center pr-3 border-r border-neutral-200">
+              <BrandLogo className="h-6 w-auto text-black shrink-0" />
+            </div>
+
+            {/* Location Pill */}
             <div
-              className="flex items-center gap-2 px-5 h-12 rounded-xl bg-green-50 border border-green-100 cursor-pointer transition-all duration-200 hover:bg-green-600 hover:text-white group shrink-0"
+              className="flex items-center gap-2 px-4 h-11 rounded-xl bg-neutral-950 text-white cursor-pointer transition-all duration-200 hover:bg-neutral-800 shadow-sm shrink-0 group"
               onClick={handleLocationClick}
+              role="button"
+              tabIndex={0}
+              aria-label="Change Stock Location"
             >
-              <span className="text-xs font-bold uppercase tracking-wide text-green-700 group-hover:text-green-100">
+              <IconMapPin size={16} className="text-zinc-400 group-hover:text-white shrink-0 transition-colors" />
+              <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 group-hover:text-zinc-200">
                 Location:
               </span>
-              <span className="text-sm font-extrabold uppercase text-green-900 group-hover:text-white truncate max-w-[200px]">
+              <span className="text-xs font-black uppercase text-white truncate max-w-[180px]">
                 {currentStock?.label || currentStock?.name || "Select Stock"}
               </span>
             </div>
 
             {/* Connection Status Indicator */}
-            <div className={`flex items-center gap-2 px-4 h-12 rounded-xl border font-bold text-xs uppercase tracking-wide justify-center select-none shrink-0 ${
-              isOnline 
-                ? "bg-green-50 text-green-700 border-green-100" 
-                : "bg-amber-50 text-amber-700 border-amber-100 animate-pulse"
-            }`}>
-              <span className={`w-2.5 h-2.5 rounded-full ${isOnline ? "bg-green-500" : "bg-amber-500"}`} />
+            <div
+              className={`flex items-center gap-2 px-3.5 h-11 rounded-xl border text-[11px] font-bold uppercase tracking-wider justify-center select-none shrink-0 ${
+                isOnline
+                  ? "bg-emerald-50 text-emerald-800 border-emerald-200/80"
+                  : "bg-amber-50 text-amber-800 border-amber-200 animate-pulse"
+              }`}
+            >
+              <span className={`w-2 h-2 rounded-full ${isOnline ? "bg-emerald-500" : "bg-amber-500"}`} />
               <span>{isOnline ? "Online" : `Offline (${offlineQueue?.length || 0})`}</span>
             </div>
           </div>
 
-          {/* Quick Actions Row - horizontally scrollable on mobile */}
-          <div className="flex items-center gap-3 overflow-x-auto scrollbar-hide pb-1 -mb-1">
+          {/* Quick Actions Row */}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-hide">
             <Tooltip title="Item Exchange">
               <button
+                type="button"
                 onClick={() => setShowExchangeDialog(true)}
-                className="flex items-center justify-center w-12 h-12 rounded-xl bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-600 border border-gray-200 transition-all shadow-sm hover:shadow-md shrink-0"
+                className="flex items-center justify-center w-11 h-11 rounded-xl bg-neutral-100 hover:bg-black text-neutral-700 hover:text-white border border-neutral-200 transition-all duration-200 shadow-xs hover:shadow-md shrink-0 cursor-pointer"
+                aria-label="Exchange"
               >
-                <IconArrowsExchange size={22} />
+                <IconArrowsExchange size={20} />
               </button>
             </Tooltip>
             <Tooltip title="Invoices">
               <button
+                type="button"
                 onClick={() => setShowInvoicesForm(true)}
-                className="flex items-center justify-center w-12 h-12 rounded-xl bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-600 border border-gray-200 transition-all shadow-sm hover:shadow-md shrink-0"
+                className="flex items-center justify-center w-11 h-11 rounded-xl bg-neutral-100 hover:bg-black text-neutral-700 hover:text-white border border-neutral-200 transition-all duration-200 shadow-xs hover:shadow-md shrink-0 cursor-pointer"
+                aria-label="Invoices"
               >
-                <IconReceipt size={22} />
+                <IconReceipt size={20} />
               </button>
             </Tooltip>
             <Tooltip title="Petty Cash">
               <button
+                type="button"
                 onClick={handlePettyCashClick}
-                className="flex items-center justify-center w-12 h-12 rounded-xl bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-600 border border-gray-200 transition-all shadow-sm hover:shadow-md shrink-0"
+                className="flex items-center justify-center w-11 h-11 rounded-xl bg-neutral-100 hover:bg-black text-neutral-700 hover:text-white border border-neutral-200 transition-all duration-200 shadow-xs hover:shadow-md shrink-0 cursor-pointer"
+                aria-label="Petty Cash"
               >
-                <IconCash size={22} />
+                <IconCash size={20} />
               </button>
             </Tooltip>
             <Tooltip title="Settings">
               <button
+                type="button"
                 onClick={() => setShowSettingsDialog(true)}
-                className="flex items-center justify-center w-12 h-12 rounded-xl bg-gray-50 hover:bg-green-50 text-gray-600 hover:text-green-600 border border-gray-200 transition-all shadow-sm hover:shadow-md shrink-0"
+                className="flex items-center justify-center w-11 h-11 rounded-xl bg-neutral-100 hover:bg-black text-neutral-700 hover:text-white border border-neutral-200 transition-all duration-200 shadow-xs hover:shadow-md shrink-0 cursor-pointer"
+                aria-label="Settings"
               >
-                <IconSettings size={22} />
+                <IconSettings size={20} />
               </button>
             </Tooltip>
             <Tooltip title="Logout">
               <button
+                type="button"
                 onClick={handleLogout}
-                className="flex items-center justify-center w-12 h-12 rounded-xl bg-red-50 hover:bg-red-600 text-red-500 hover:text-white border border-red-100 hover:border-red-600 transition-all shadow-sm hover:shadow-md shrink-0"
+                className="flex items-center justify-center w-11 h-11 rounded-xl bg-red-50 hover:bg-red-600 text-red-600 hover:text-white border border-red-200/80 hover:border-red-600 transition-all duration-200 shadow-xs hover:shadow-md shrink-0 cursor-pointer"
+                aria-label="Logout"
               >
-                <IconLogout size={22} />
+                <IconLogout size={20} />
               </button>
             </Tooltip>
-
           </div>
         </div>
 
         {/* Search & Refresh Row */}
-        <div className="p-4 bg-white rounded-2xl shadow-sm border border-gray-100">
-          <form
-            onSubmit={handleSearch}
-            className="flex flex-col sm:flex-row gap-3 w-full"
-          >
+        <div className="p-3 bg-white rounded-2xl shadow-sm border border-neutral-200/80">
+          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2.5 w-full">
             <Input
               size="large"
-              placeholder="Search products by name or code..."
+              placeholder="Search products by name, brand, or SKU..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              prefix={<IconSearch size={22} className="text-gray-400 mr-2" />}
-              className="flex-1 font-medium text-lg rounded-xl bg-gray-50 border-gray-200 focus:bg-white focus:border-green-600 hover:bg-white h-14"
+              prefix={<IconSearch size={20} className="text-zinc-400 mr-2 shrink-0" />}
+              className="flex-1 font-semibold text-base rounded-xl bg-neutral-50 border-neutral-200 focus:bg-white focus:border-black hover:bg-white h-12"
             />
-            <div className="flex gap-3">
+            <div className="flex gap-2">
               <button
                 type="submit"
-                className="flex-1 sm:flex-none items-center justify-center px-8 h-14 bg-green-600 text-white font-bold text-base rounded-xl transition-all hover:bg-green-700 shadow-sm hover:shadow-md"
+                className="flex-1 sm:flex-none inline-flex items-center justify-center px-7 h-12 bg-black hover:bg-neutral-800 text-white font-extrabold text-xs uppercase tracking-widest rounded-xl transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer active:scale-98"
               >
                 Search
               </button>
               <button
                 type="button"
                 onClick={handleRefresh}
-                className="flex items-center justify-center w-14 h-14 rounded-xl bg-gray-50 hover:bg-gray-100 text-gray-600 border border-gray-200 transition-all shadow-sm hover:shadow-md"
+                className="flex items-center justify-center w-12 h-12 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border border-neutral-200 transition-all duration-200 shadow-xs cursor-pointer active:scale-95"
+                title="Refresh Product Catalog"
+                aria-label="Refresh Catalog"
               >
-                <IconRefresh size={22} />
+                <IconRefresh size={20} />
               </button>
             </div>
           </form>
@@ -232,22 +252,10 @@ export default function POSHero() {
       </div>
 
       {/* Action Dialogs */}
-      <POSInvoiceDialog
-        open={showInvoicesForm}
-        onClose={() => setShowInvoicesForm(false)}
-      />
-      <POSSettingsDialog
-        open={showSettingsDialog}
-        onClose={() => setShowSettingsDialog(false)}
-      />
-      <POSExchangeDialog
-        open={showExchangeDialog}
-        onClose={() => setShowExchangeDialog(false)}
-      />
-      <POSPettyCashDialog
-        open={showPettyCashDialog}
-        onClose={() => setShowPettyCashDialog(false)}
-      />
+      <POSInvoiceDialog open={showInvoicesForm} onClose={() => setShowInvoicesForm(false)} />
+      <POSSettingsDialog open={showSettingsDialog} onClose={() => setShowSettingsDialog(false)} />
+      <POSExchangeDialog open={showExchangeDialog} onClose={() => setShowExchangeDialog(false)} />
+      <POSPettyCashDialog open={showPettyCashDialog} onClose={() => setShowPettyCashDialog(false)} />
       <POSCredentialVerifyAndRequestAuthorizeForm
         open={verifyOpen}
         onCancel={handleVerifyCancel}
