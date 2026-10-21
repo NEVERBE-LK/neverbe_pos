@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Modal, Input, Button, Table, Spin, Tag, Badge, Tooltip } from "antd";
+import { Modal, Input, Button, Table, Spin, Tag, Badge, Tooltip, Select } from "antd";
 import {
   IconSearch,
   IconX,
@@ -41,6 +41,7 @@ export default function POSOnlineOrdersDialog({
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [trackingNumber, setTrackingNumber] = useState("");
+  const [courier, setCourier] = useState<string>("Domex");
 
   useEffect(() => {
     if (open) {
@@ -48,16 +49,24 @@ export default function POSOnlineOrdersDialog({
         setSearchQuery(initialOrderId);
         setActiveTab("ALL");
       }
-      fetchOnlineOrders();
+      fetchOrders();
     }
   }, [open, activeTab, selectedStockId, initialOrderId]);
 
-  const fetchOnlineOrders = async () => {
+  useEffect(() => {
+    if (selectedOrder) {
+      setTrackingNumber(selectedOrder.trackingNumber || "");
+      setCourier(selectedOrder.courier || "Domex");
+    }
+  }, [selectedOrder?.orderId]);
+
+  const fetchOrders = async () => {
     setLoading(true);
     try {
-      // Try fetching online orders from ERP or POS orders endpoint
+      // Solely fetch and display website orders
       const params: any = {
         limit: 50,
+        from: "Website",
       };
       if (activeTab !== "ALL") {
         params.status = activeTab;
@@ -78,51 +87,55 @@ export default function POSOnlineOrdersDialog({
           const list = posRes.data?.data || posRes.data || [];
           fetchedOrders = Array.isArray(list) ? list : [];
         } catch (posErr) {
-          console.warn("Could not fetch remote online orders, checking offline cache", posErr);
-          const cached = localStorage.getItem("neverbePOSOfflineQueue");
-          fetchedOrders = cached ? JSON.parse(cached) : [];
+          console.warn("Could not fetch remote orders", posErr);
         }
       }
 
-      // Filter for online orders if mixed
-      const onlineFiltered = fetchedOrders.filter((o) => {
+      // Filter solely for website orders only
+      const websiteOrders = fetchedOrders.filter((o) => {
         const fromSource = (o.from || "").toLowerCase();
-        return fromSource === "website" || fromSource === "online" || !fromSource || fromSource === "store";
+        return fromSource === "website" || fromSource === "online";
       });
 
-      setOrders(onlineFiltered);
+      setOrders(websiteOrders);
     } catch (err: any) {
-      console.error("Failed to load online orders:", err);
-      toast.error("Failed to load online orders");
+      console.error("Failed to load orders:", err);
+      toast.error("Failed to load orders");
     } finally {
       setLoading(false);
     }
   };
 
-  const handleUpdateStatus = async (order: Order, newStatus: string) => {
+  const handleProcessOrder = async (order: Order) => {
     setProcessingId(order.orderId);
     try {
       const payload: any = {
-        status: newStatus,
+        status: "Completed",
+        courier: courier || order.courier || "Domex",
         trackingNumber: trackingNumber.trim() || order.trackingNumber || "",
+        sendNotification: true,
       };
 
-      // Try ERP tracking update, then order update
+      // Try ERP tracking update, then order update (Processing -> Completed)
       try {
         await api.patch(`/api/v1/erp/orders/${order.orderId}/tracking`, payload);
       } catch {
         await api.put(`/api/v1/erp/orders/${order.orderId}`, payload);
       }
 
-      toast.success(`Order #${order.orderId} marked as ${newStatus}`);
-      setTrackingNumber("");
+      toast.success(`Order #${order.orderId} processed to Completed!`);
       if (selectedOrder?.orderId === order.orderId) {
-        setSelectedOrder({ ...selectedOrder, status: newStatus });
+        setSelectedOrder({
+          ...selectedOrder,
+          status: "Completed",
+          courier: payload.courier,
+          trackingNumber: payload.trackingNumber,
+        });
       }
-      fetchOnlineOrders();
+      fetchOrders();
     } catch (err: any) {
-      console.error("Update status error:", err);
-      toast.error(err.response?.data?.message || `Failed to update order status`);
+      console.error("Process order error:", err);
+      toast.error(err.response?.data?.message || `Failed to process order`);
     } finally {
       setProcessingId(null);
     }
@@ -165,14 +178,6 @@ export default function POSOnlineOrdersDialog({
             Payment Pending
           </span>
         );
-      case "dispatched":
-      case "ready":
-        return (
-          <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-blue-500/10 text-blue-600 border border-blue-500/20">
-            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            Dispatched
-          </span>
-        );
       case "completed":
         return (
           <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-500/10 text-emerald-600 border border-emerald-500/20">
@@ -209,20 +214,17 @@ export default function POSOnlineOrdersDialog({
           <div>
             <div className="flex items-center gap-2">
               <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
-                FULFILLMENT DISPATCH
-              </span>
-              <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full text-[9px] font-black tracking-wider">
-                ONLINE SYNC
+                ORDER FULFILLMENT
               </span>
             </div>
             <h2 className="text-xl font-black text-white tracking-tight leading-tight">
-              Online Orders Processing
+              Orders Processing
             </h2>
           </div>
         </div>
         <div className="flex items-center gap-2">
           <button
-            onClick={fetchOnlineOrders}
+            onClick={fetchOrders}
             className="flex items-center justify-center w-9 h-9 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all cursor-pointer"
             title="Refresh Orders"
           >
@@ -244,7 +246,7 @@ export default function POSOnlineOrdersDialog({
           {/* Status Tabs & Search */}
           <div className="p-4 border-b border-neutral-200/80 space-y-3">
             <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
-              {["Processing", "Payment Pending", "Dispatched", "Completed", "ALL"].map((tab) => (
+              {["Processing", "Payment Pending", "Completed", "ALL"].map((tab) => (
                 <button
                   key={tab}
                   onClick={() => setActiveTab(tab)}
@@ -279,10 +281,10 @@ export default function POSOnlineOrdersDialog({
               <div className="flex flex-col items-center justify-center h-64 text-center px-4">
                 <IconPackage size={40} className="text-neutral-300 mb-2" />
                 <p className="font-black text-xs uppercase tracking-wider text-neutral-700">
-                  No Online Orders Found
+                  No Orders Found
                 </p>
                 <p className="text-[11px] text-neutral-400 mt-1">
-                  There are no online orders currently under '{activeTab}'.
+                  There are no orders currently under '{activeTab}'.
                 </p>
               </div>
             ) : (
@@ -302,7 +304,7 @@ export default function POSOnlineOrdersDialog({
                           #{order.orderId?.toUpperCase()}
                         </span>
                         <span className="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded bg-neutral-200 text-neutral-700">
-                          {order.from || "Online"}
+                          {order.from || "Website"}
                         </span>
                       </div>
                       {getStatusBadge(order.status)}
@@ -340,7 +342,7 @@ export default function POSOnlineOrdersDialog({
                 <div className="flex items-center justify-between flex-wrap gap-2">
                   <div>
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 block">
-                      ONLINE ORDER DETAILS
+                      ORDER DETAILS
                     </span>
                     <h3 className="text-xl font-black text-neutral-950 tracking-tight font-mono">
                       #{selectedOrder.orderId?.toUpperCase()}
@@ -361,8 +363,8 @@ export default function POSOnlineOrdersDialog({
                     <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
                       Delivery Location
                     </span>
-                    <p className="font-bold text-neutral-900 truncate">{selectedOrder.deliveryAddress?.city || "Standard Dispatch"}</p>
-                    <p className="text-neutral-500 text-[11px] truncate">{selectedOrder.deliveryAddress?.address || "Online Store Order"}</p>
+                    <p className="font-bold text-neutral-900 truncate">{selectedOrder.deliveryAddress?.city || "Standard Delivery"}</p>
+                    <p className="text-neutral-500 text-[11px] truncate">{selectedOrder.deliveryAddress?.address || "Website Delivery"}</p>
                   </div>
                   <div>
                     <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
@@ -380,7 +382,7 @@ export default function POSOnlineOrdersDialog({
                       Date & Source
                     </span>
                     <p className="font-bold text-neutral-900">{formatSLDate(selectedOrder.createdAt) || "Recently"}</p>
-                    <span className="text-[10px] font-mono text-neutral-400 uppercase">{selectedOrder.from || "Online Website"}</span>
+                    <span className="text-[10px] font-mono text-neutral-400 uppercase">{selectedOrder.from || "Website"}</span>
                   </div>
                 </div>
               </div>
@@ -419,49 +421,89 @@ export default function POSOnlineOrdersDialog({
                 </div>
               </div>
 
-              {/* Dispatch Action Controls */}
-              <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-xs space-y-3">
+              {/* Fulfillment Controls - Processing to Completed flow */}
+              <div className="bg-white p-5 rounded-2xl border border-neutral-200/80 shadow-xs space-y-3.5">
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 block">
                   FULFILLMENT CONTROLS
                 </span>
 
-                <div className="space-y-2">
-                  <label className="text-[10px] font-black uppercase tracking-wider text-neutral-500">
-                    Courier Tracking Reference (Optional)
-                  </label>
-                  <Input
-                    placeholder="e.g. PRN-984321..."
-                    value={trackingNumber}
-                    onChange={(e) => setTrackingNumber(e.target.value)}
-                    className="rounded-xl h-11 font-mono font-bold text-xs"
-                  />
-                </div>
+                {selectedOrder.status?.toLowerCase() === "completed" ? (
+                  <div className="p-4 rounded-xl bg-emerald-50/80 border border-emerald-200/80 flex items-center justify-between gap-3 flex-wrap">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-600 text-white flex items-center justify-center shrink-0">
+                        <IconCheck size={18} />
+                      </div>
+                      <div>
+                        <p className="text-xs font-black text-emerald-950 m-0">Order Completed & Fulfilled</p>
+                        <p className="text-[11px] text-emerald-700 m-0 font-mono mt-0.5">
+                          {selectedOrder.courier || "Courier"} {selectedOrder.trackingNumber ? `• Ref: ${selectedOrder.trackingNumber}` : ""}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      onClick={() => handlePrintSlip(selectedOrder)}
+                      icon={<IconPrinter size={16} />}
+                      className="h-10 px-4 rounded-xl font-bold text-xs uppercase tracking-wider text-neutral-800 bg-white hover:bg-neutral-100 border-emerald-300"
+                    >
+                      Print Slip
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black uppercase tracking-wider text-neutral-500 block">
+                          Courier Partner
+                        </label>
+                        <Select
+                          value={courier}
+                          onChange={(val) => setCourier(val)}
+                          className="w-full h-11 text-xs font-bold"
+                          options={[
+                            { value: "Domex", label: "Domex Courier" },
+                            { value: "Pronto", label: "Pronto Lanka" },
+                            { value: "Grasshoppers", label: "Grasshoppers" },
+                            { value: "Fulfill", label: "Fulfill.lk" },
+                            { value: "Prompt Express", label: "Prompt Express" },
+                            { value: "Self Delivery", label: "Self Hand Delivery" },
+                            { value: "Other", label: "Other Courier Service" },
+                          ]}
+                        />
+                      </div>
 
-                <div className="flex flex-wrap gap-2.5 pt-2">
-                  <Button
-                    type="primary"
-                    loading={processingId === selectedOrder.orderId}
-                    onClick={() => handleUpdateStatus(selectedOrder, "Dispatched")}
-                    className="flex-1 h-12 rounded-xl font-black text-xs uppercase tracking-widest text-white !bg-black hover:!bg-neutral-800 border-none shadow-md"
-                  >
-                    MARK DISPATCHED
-                  </Button>
-                  <Button
-                    type="primary"
-                    loading={processingId === selectedOrder.orderId}
-                    onClick={() => handleUpdateStatus(selectedOrder, "Completed")}
-                    className="h-12 px-6 rounded-xl font-black text-xs uppercase tracking-widest text-emerald-700 !bg-emerald-50 hover:!bg-emerald-100 border border-emerald-300"
-                  >
-                    COMPLETE
-                  </Button>
-                  <Button
-                    onClick={() => handlePrintSlip(selectedOrder)}
-                    icon={<IconPrinter size={18} />}
-                    className="h-12 px-5 rounded-xl font-bold text-xs uppercase tracking-wider text-neutral-700 hover:bg-neutral-100 border-neutral-300"
-                  >
-                    Print Slip
-                  </Button>
-                </div>
+                      <div className="space-y-1.5">
+                        <label className="text-[10px] font-black uppercase tracking-wider text-neutral-500 block">
+                          Courier Tracking Reference (Optional)
+                        </label>
+                        <Input
+                          placeholder="e.g. PRN-984321..."
+                          value={trackingNumber}
+                          onChange={(e) => setTrackingNumber(e.target.value)}
+                          className="rounded-xl h-11 font-mono font-bold text-xs"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap gap-2.5 pt-1">
+                      <Button
+                        type="primary"
+                        loading={processingId === selectedOrder.orderId}
+                        onClick={() => handleProcessOrder(selectedOrder)}
+                        icon={<IconCheck size={18} />}
+                        className="flex-1 h-12 rounded-xl font-black text-xs uppercase tracking-widest text-white !bg-black hover:!bg-neutral-800 border-none shadow-md flex items-center justify-center gap-2"
+                      >
+                        CONFIRM & PROCESS ORDER
+                      </Button>
+                      <Button
+                        onClick={() => handlePrintSlip(selectedOrder)}
+                        icon={<IconPrinter size={18} />}
+                        className="h-12 px-5 rounded-xl font-bold text-xs uppercase tracking-wider text-neutral-700 hover:bg-neutral-100 border-neutral-300 flex items-center justify-center gap-1.5"
+                      >
+                        Print Slip
+                      </Button>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           ) : (
@@ -471,7 +513,7 @@ export default function POSOnlineOrdersDialog({
                 Select an Order
               </h4>
               <p className="text-xs text-neutral-400 max-w-xs mt-1">
-                Choose an online order from the left list to review packaging details, update courier dispatch, or generate thermal slips.
+                Choose a website order from the left list to review items, process fulfillment, or generate slips.
               </p>
             </div>
           )}

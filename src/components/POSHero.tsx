@@ -216,12 +216,12 @@ export default function POSHero() {
                 <IconReceipt size={20} />
               </button>
             </Tooltip>
-            <Tooltip title="Online Orders Processing">
+            <Tooltip title="Orders Processing">
               <button
                 type="button"
                 onClick={handleOnlineOrdersClick}
                 className="flex items-center justify-center w-11 h-11 rounded-xl bg-neutral-100 hover:bg-black text-neutral-700 hover:text-white border border-neutral-200 transition-all duration-200 shadow-xs hover:shadow-md shrink-0 cursor-pointer relative"
-                aria-label="Online Orders"
+                aria-label="Orders Processing"
               >
                 <IconTruck size={20} />
                 {unreadCount > 0 ? (

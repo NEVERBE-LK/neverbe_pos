@@ -63,6 +63,7 @@ export interface Order {
   promotionDiscount?: number;
 
   // Order Tracking
+  courier?: string;
   trackingNumber?: string;
   estimatedDelivery?: Timestamp | string;
   statusHistory?: { status: string; date: Timestamp | string }[];
