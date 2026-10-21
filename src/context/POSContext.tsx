@@ -331,6 +331,9 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
 
       if (existingIdx > -1) {
         items[existingIdx].quantity += item.quantity;
+        if (item.isMinusStock) {
+          items[existingIdx].isMinusStock = true;
+        }
       } else {
         items.push(item);
       }

@@ -17,6 +17,7 @@ export interface POSCartItem {
   price: number;
   bPrice: number;
   stockId: string;
+  isMinusStock?: boolean;
   createdAt?: Timestamp | string;
 }
 

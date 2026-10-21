@@ -198,6 +198,7 @@ export default function POSVariantDialog({
         price: product.sellingPrice,
         bPrice: product.buyingPrice,
         stockId: selectedStockId!,
+        isMinusStock: stockQty <= 0,
       };
 
       if (onAddToCart) {
