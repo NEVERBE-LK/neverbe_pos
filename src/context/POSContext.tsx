@@ -174,13 +174,27 @@ export const POSProvider = ({ children }: { children: ReactNode }) => {
           dispatch({ type: "SET_STOCKS", payload: JSON.parse(cached) });
         }
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Load Stocks Error:", error);
-      const cached = localStorage.getItem("neverbePOSCachedStocks");
-      if (cached) {
-        dispatch({ type: "SET_STOCKS", payload: JSON.parse(cached) });
+      const status = error?.status || error?.response?.status;
+      if (
+        status === 401 ||
+        status === 403 ||
+        error?.message?.includes("401") ||
+        error?.message?.includes("403") ||
+        error?.message?.toLowerCase().includes("unauthorized") ||
+        error?.message?.toLowerCase().includes("forbidden")
+      ) {
+        localStorage.removeItem("neverbePOSCachedStocks");
+        dispatch({ type: "SET_STOCKS", payload: [] });
+        toast.error("Unauthorized: Your account lacks permission to access POS stocks.");
       } else {
-        toast.error("Failed to load stocks");
+        const cached = localStorage.getItem("neverbePOSCachedStocks");
+        if (cached) {
+          dispatch({ type: "SET_STOCKS", payload: JSON.parse(cached) });
+        } else {
+          toast.error("Failed to load stocks");
+        }
       }
     } finally {
       dispatch({ type: "SET_STOCKS_LOADING", payload: false });

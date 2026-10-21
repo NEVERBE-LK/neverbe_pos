@@ -36,13 +36,18 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
+    const status = error.response?.status;
     const message =
       error.response?.data?.message ||
       error.response?.data?.error ||
       error.message ||
       "Network error";
-    console.error("[API Error]", message);
-    return Promise.reject(new Error(message));
+    console.error(`[API Error${status ? ` ${status}` : ""}]`, message);
+
+    const enhancedError = new Error(message) as any;
+    enhancedError.response = error.response;
+    enhancedError.status = status;
+    return Promise.reject(enhancedError);
   },
 );
 

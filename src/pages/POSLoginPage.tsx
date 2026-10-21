@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut } from "firebase/auth";
 import { auth } from "@/firebase/firebaseClient";
+import api from "@/lib/api";
 import { Button, Input } from "antd";
 import { IconMail, IconLock, IconShieldCheck } from "@tabler/icons-react";
 import { FcGoogle } from "react-icons/fc";
@@ -28,11 +29,34 @@ export default function POSLoginPage() {
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const user = userCredential.user;
 
-      try {
-        const tokenResult = await user.getIdTokenResult();
-        const role = ((tokenResult.claims.role as string) || "").toLowerCase();
-        localStorage.setItem("neverbePOSUserRole", role);
+      // Verify POS authorization with backend
+      const token = await user.getIdToken();
+      const formData = new FormData();
+      formData.append("data", JSON.stringify({ uid: user.uid }));
 
+      const res = await api.post("/api/v1/auth/login", formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const userData = res.data;
+      const role = (userData?.role || "").toLowerCase();
+      const permissions: string[] = userData?.permissions || [];
+      const hasPosAccess = role === "admin" || permissions.includes("access_pos");
+
+      if (!hasPosAccess) {
+        await signOut(auth);
+        localStorage.removeItem("neverbePOSUserRole");
+        localStorage.removeItem("neverbePOSUserPermissions");
+        localStorage.removeItem("neverbePOSStockId");
+        localStorage.removeItem("neverbePOSCachedStocks");
+        toast.error("Access Denied: This account is not authorized to access the POS terminal.");
+        return;
+      }
+
+      localStorage.setItem("neverbePOSUserRole", role);
+      localStorage.setItem("neverbePOSUserPermissions", JSON.stringify(permissions));
+
+      try {
         const msgUint8 = new TextEncoder().encode(password);
         const hashBuffer = await crypto.subtle.digest("SHA-256", msgUint8);
         const hashArray = Array.from(new Uint8Array(hashBuffer));
@@ -45,7 +69,20 @@ export default function POSLoginPage() {
       toast.success("Login successful!");
     } catch (error: any) {
       console.error("Login Error:", error);
-      toast.error(error.message || "Failed to login. Please check credentials.");
+      const status = error?.status || error?.response?.status;
+      if (
+        status === 401 ||
+        status === 403 ||
+        error?.message?.includes("401") ||
+        error?.message?.includes("403") ||
+        error?.message?.toLowerCase().includes("unauthorized") ||
+        error?.message?.toLowerCase().includes("forbidden")
+      ) {
+        await signOut(auth).catch(() => {});
+        toast.error("Access Denied: This account is not authorized to access POS.");
+      } else {
+        toast.error(error.message || "Failed to login. Please check credentials.");
+      }
     } finally {
       setLoading(false);
     }
@@ -55,11 +92,52 @@ export default function POSLoginPage() {
     setLoading(true);
     try {
       const provider = new GoogleAuthProvider();
-      await signInWithPopup(auth, provider);
-      toast.success("Authenticating with Google...");
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Verify POS authorization with backend
+      const token = await user.getIdToken();
+      const formData = new FormData();
+      formData.append("data", JSON.stringify({ uid: user.uid }));
+
+      const res = await api.post("/api/v1/auth/login", formData, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      const userData = res.data;
+      const role = (userData?.role || "").toLowerCase();
+      const permissions: string[] = userData?.permissions || [];
+      const hasPosAccess = role === "admin" || permissions.includes("access_pos");
+
+      if (!hasPosAccess) {
+        await signOut(auth);
+        localStorage.removeItem("neverbePOSUserRole");
+        localStorage.removeItem("neverbePOSUserPermissions");
+        localStorage.removeItem("neverbePOSStockId");
+        localStorage.removeItem("neverbePOSCachedStocks");
+        toast.error("Access Denied: This Google account is not authorized to access the POS terminal.");
+        return;
+      }
+
+      localStorage.setItem("neverbePOSUserRole", role);
+      localStorage.setItem("neverbePOSUserPermissions", JSON.stringify(permissions));
+      toast.success("Login successful!");
     } catch (error: any) {
       console.error("Google Login Error:", error);
-      toast.error(error.message || "Failed to login with Google.");
+      const status = error?.status || error?.response?.status;
+      if (
+        status === 401 ||
+        status === 403 ||
+        error?.message?.includes("401") ||
+        error?.message?.includes("403") ||
+        error?.message?.toLowerCase().includes("unauthorized") ||
+        error?.message?.toLowerCase().includes("forbidden")
+      ) {
+        await signOut(auth).catch(() => {});
+        toast.error("Access Denied: This account is not authorized to access POS.");
+      } else {
+        toast.error(error.message || "Failed to login with Google.");
+      }
     } finally {
       setLoading(false);
     }
