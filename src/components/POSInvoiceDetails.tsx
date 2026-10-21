@@ -59,33 +59,42 @@ export default function POSInvoiceDetails() {
   return (
     <div className="flex-1 flex flex-col rounded-2xl shadow-sm border border-neutral-200/80 overflow-hidden bg-white mt-1 lg:mt-0">
       {/* Sportswear Terminal Header */}
-      <div className="p-4 lg:p-5 bg-neutral-950 text-white flex justify-between items-center rounded-t-2xl border-b border-neutral-800">
-        <div className="flex items-center gap-2.5">
-          <IconReceipt size={22} className="text-zinc-400" />
-          <h2 className="text-sm lg:text-base font-black uppercase tracking-[0.16em] leading-tight text-white m-0">
-            Current Order
-          </h2>
-          {todayOrdersCount !== undefined && (
-            <span className="bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 text-[10px] font-black px-2 py-0.5 rounded-md shrink-0 select-none">
-              #{todayOrdersCount} TODAY
-            </span>
-          )}
+      <div className="px-4 py-3.5 lg:px-5 lg:py-4 bg-neutral-950 text-white flex justify-between items-center rounded-t-2xl border-b border-neutral-800 shrink-0 gap-3">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="w-9 h-9 rounded-xl bg-neutral-800 flex items-center justify-center text-white shrink-0">
+            <IconReceipt size={18} />
+          </div>
+          <div className="min-w-0">
+            <h2 className="text-xs lg:text-sm font-black uppercase tracking-[0.16em] text-white leading-tight truncate m-0 font-mono">
+              Current Order
+            </h2>
+            {todayOrdersCount !== undefined && (
+              <span className="text-[10px] font-bold text-emerald-400 font-mono tracking-wider block mt-0.5">
+                #{todayOrdersCount} TODAY
+              </span>
+            )}
+          </div>
         </div>
-        <span className="bg-white/10 text-white px-2.5 py-1 rounded-lg font-bold font-mono text-xs backdrop-blur-md border border-white/10 shrink-0">
-          #{invoiceId || "------"}
-        </span>
+
+        <div className="flex items-center gap-2 shrink-0">
+          <span className="bg-neutral-900 text-neutral-200 px-3 py-1.5 rounded-xl font-bold font-mono text-xs border border-neutral-800 tracking-wider shadow-inner">
+            #{invoiceId || "------"}
+          </span>
+        </div>
       </div>
 
       {/* Items List */}
-      <div className="flex-1 overflow-auto p-3.5 lg:p-4 bg-neutral-50/60">
+      <div className="flex-1 overflow-y-auto p-3.5 lg:p-4 bg-neutral-50/60">
         {isInvoiceLoading ? (
           <div className="flex justify-center items-center h-full min-h-[220px]">
             <Spin size="large" />
           </div>
         ) : items.length === 0 ? (
-          <div className="flex flex-col justify-center items-center h-full py-12 text-center select-none">
-            <IconShoppingCartOff size={52} stroke={1.2} className="text-zinc-300 mb-3" />
-            <p className="font-extrabold text-sm uppercase text-neutral-700 tracking-widest m-0">
+          <div className="flex flex-col justify-center items-center h-full py-16 text-center select-none">
+            <div className="w-14 h-14 rounded-2xl bg-neutral-200/60 flex items-center justify-center text-neutral-400 mb-3">
+              <IconShoppingCartOff size={28} stroke={1.5} />
+            </div>
+            <p className="font-extrabold text-sm uppercase text-neutral-700 tracking-widest m-0 font-mono">
               Cart is Empty
             </p>
             <p className="text-xs font-medium text-zinc-400 mt-1 max-w-[220px]">
@@ -101,58 +110,65 @@ export default function POSInvoiceDetails() {
               return (
                 <div
                   key={itemKey}
-                  className="flex gap-3.5 p-3.5 bg-white rounded-xl border border-neutral-200/80 transition-all hover:border-black hover:shadow-md group"
+                  className="p-3.5 bg-white rounded-2xl border border-neutral-200/80 transition-all hover:border-black hover:shadow-xs group flex flex-col gap-2"
                 >
-                  <div className="w-14 h-14 lg:w-16 lg:h-16 shrink-0 bg-neutral-100/70 rounded-lg p-1.5 border border-neutral-200/60 flex items-center justify-center overflow-hidden">
-                    <img
-                      src={item.thumbnail || "/placeholder.png"}
-                      alt={item.name}
-                      className="w-full h-full object-contain"
-                    />
-                  </div>
-
-                  <div className="flex-1 flex flex-col justify-center min-w-0">
-                    <p className="font-bold text-xs lg:text-sm text-neutral-900 line-clamp-1 leading-snug m-0">
-                      {item.name}
-                    </p>
-                    <p className="text-[10px] text-zinc-400 font-extrabold uppercase mt-0.5 tracking-wider m-0">
-                      {item.variantName} · SIZE {item.size}
-                    </p>
-
-                    <div className="flex justify-between items-baseline mt-2 flex-wrap gap-1">
-                      <span className="text-[11px] font-semibold text-zinc-500 bg-neutral-100 px-2 py-0.5 rounded border border-neutral-200">
-                        Rs. {item.price.toLocaleString()} × {item.quantity}
-                      </span>
-                      <span className="text-sm lg:text-base font-black text-neutral-950">
-                        Rs. {(item.price * item.quantity - (item.discount || 0)).toLocaleString()}
-                      </span>
+                  <div className="flex gap-3 items-center">
+                    {/* Thumbnail */}
+                    <div className="w-12 h-12 lg:w-14 lg:h-14 shrink-0 bg-neutral-100 rounded-xl p-1 border border-neutral-200/70 flex items-center justify-center overflow-hidden">
+                      <img
+                        src={item.thumbnail || "/placeholder.png"}
+                        alt={item.name}
+                        className="w-full h-full object-contain"
+                      />
                     </div>
 
-                    {item.discount > 0 && (
-                      <p className="text-[10px] text-emerald-600 font-extrabold uppercase mt-1 tracking-wide m-0">
-                        Discount: -Rs. {item.discount.toLocaleString()}
+                    {/* Title & Variant */}
+                    <div className="flex-1 min-w-0">
+                      <p className="font-black text-xs lg:text-sm text-neutral-900 truncate leading-snug m-0">
+                        {item.name}
                       </p>
-                    )}
+                      <p className="text-[10px] text-neutral-400 font-extrabold uppercase mt-0.5 tracking-wider truncate m-0 font-mono">
+                        {item.variantName} · SIZE {item.size}
+                      </p>
+                    </div>
+
+                    {/* Delete action */}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveItem(item, index)}
+                      disabled={isRemoving}
+                      className={`p-1.5 rounded-lg shrink-0 transition-colors cursor-pointer ${
+                        isRemoving
+                          ? "text-neutral-300 cursor-not-allowed"
+                          : "text-neutral-400 hover:text-red-600 hover:bg-red-50"
+                      }`}
+                      title="Remove item"
+                      aria-label="Remove item"
+                    >
+                      {isRemoving ? (
+                        <IconLoader2 size={16} className="animate-spin" />
+                      ) : (
+                        <IconTrash size={16} />
+                      )}
+                    </button>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => handleRemoveItem(item, index)}
-                    disabled={isRemoving}
-                    className={`self-center transition-all p-2 rounded-lg shrink-0 cursor-pointer ${
-                      isRemoving
-                        ? "text-zinc-300 cursor-not-allowed"
-                        : "text-zinc-400 hover:text-red-600 hover:bg-red-50"
-                    }`}
-                    title="Remove item"
-                    aria-label="Remove item"
-                  >
-                    {isRemoving ? (
-                      <IconLoader2 size={18} className="animate-spin" />
-                    ) : (
-                      <IconTrash size={18} />
-                    )}
-                  </button>
+                  {/* Pricing row with ample space */}
+                  <div className="flex items-center justify-between pt-2 border-t border-dashed border-neutral-100 mt-0.5">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] font-bold text-neutral-600 bg-neutral-100 px-2 py-0.5 rounded-md font-mono border border-neutral-200/60">
+                        Rs. {item.price.toLocaleString()} × {item.quantity}
+                      </span>
+                      {item.discount > 0 && (
+                        <span className="text-[9px] font-black text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded font-mono">
+                          -Rs. {item.discount.toLocaleString()}
+                        </span>
+                      )}
+                    </div>
+                    <span className="text-sm lg:text-base font-black text-neutral-950 font-mono">
+                      Rs. {(item.price * item.quantity - (item.discount || 0)).toLocaleString()}
+                    </span>
+                  </div>
                 </div>
               );
             })}
@@ -161,22 +177,22 @@ export default function POSInvoiceDetails() {
       </div>
 
       {/* Summary Section */}
-      <div className="p-4 lg:p-5 bg-white border-t border-neutral-200/80 shadow-[0_-10px_25px_-10px_rgba(0,0,0,0.03)] relative z-10 rounded-b-2xl">
+      <div className="p-4 lg:p-5 bg-white border-t border-neutral-200/80 shadow-[0_-10px_25px_-10px_rgba(0,0,0,0.03)] relative z-10 rounded-b-2xl shrink-0">
         <div className="flex justify-between mb-2 text-xs">
-          <span className="text-zinc-500 font-bold uppercase tracking-wider">
-            Subtotal ({items.length} items)
+          <span className="text-neutral-500 font-bold uppercase tracking-wider font-mono text-[11px]">
+            Subtotal ({items.length} {items.length === 1 ? "item" : "items"})
           </span>
-          <span className="font-extrabold text-neutral-800">
+          <span className="font-extrabold text-neutral-900 font-mono">
             Rs. {subtotal.toLocaleString()}
           </span>
         </div>
 
         {totalDiscount > 0 && (
           <div className="flex justify-between mb-2 text-xs">
-            <span className="text-emerald-600 font-bold uppercase tracking-wider">
+            <span className="text-emerald-600 font-bold uppercase tracking-wider font-mono text-[11px]">
               Total Discount
             </span>
-            <span className="font-extrabold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+            <span className="font-extrabold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 font-mono text-xs">
               -Rs. {totalDiscount.toLocaleString()}
             </span>
           </div>
@@ -185,10 +201,10 @@ export default function POSInvoiceDetails() {
         <div className="border-t border-dashed border-neutral-200 my-3" />
 
         <div className="flex justify-between items-baseline mb-4">
-          <span className="text-xs lg:text-sm font-black uppercase text-neutral-900 tracking-widest">
+          <span className="text-xs lg:text-sm font-black uppercase text-neutral-900 tracking-widest font-mono">
             Grand Total
           </span>
-          <span className="text-2xl lg:text-3xl font-black text-neutral-950 leading-none">
+          <span className="text-2xl lg:text-3xl font-black text-neutral-950 leading-none font-mono">
             Rs. {grandTotal.toLocaleString()}
           </span>
         </div>
@@ -199,7 +215,7 @@ export default function POSInvoiceDetails() {
           block
           disabled={items.length === 0}
           onClick={handleCheckout}
-          className={`h-13 text-xs lg:text-sm font-black uppercase tracking-[0.16em] rounded-xl transition-all duration-200 ${
+          className={`h-12 text-xs lg:text-sm font-black uppercase tracking-[0.16em] rounded-xl transition-all duration-200 ${
             items.length > 0
               ? "!bg-black hover:!bg-neutral-800 active:!scale-99 !text-white !border-none shadow-md hover:shadow-xl cursor-pointer"
               : "!bg-neutral-200 !text-neutral-400 !border-none cursor-not-allowed"

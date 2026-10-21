@@ -18,7 +18,7 @@ export default function POSContent() {
       {/* Main Grid Layout */}
       <div className="flex-1 flex flex-col lg:flex-row gap-3.5 p-3 sm:p-4 lg:p-5 lg:min-h-0 lg:overflow-hidden relative">
         {/* Left Panel - Hero, Search & Catalog Grid */}
-        <div className="flex-[1.55] flex flex-col gap-2.5 h-auto lg:h-full transition-all duration-200">
+        <div className="flex-1 min-w-0 flex flex-col gap-2.5 h-auto lg:h-full transition-all duration-200">
           <POSHero />
           {isProductsLoading ? (
             <div className="flex justify-center items-center flex-1 min-h-[360px] bg-white rounded-2xl border border-neutral-200/80">
@@ -32,7 +32,7 @@ export default function POSContent() {
         </div>
 
         {/* Right Panel - Order & Invoice Details */}
-        <div className="flex-1 flex flex-col h-auto lg:h-full transition-all duration-200">
+        <div className="w-full lg:w-[400px] xl:w-[440px] 2xl:w-[480px] shrink-0 flex flex-col h-auto lg:h-full transition-all duration-200">
           <POSInvoiceDetails />
         </div>
 
