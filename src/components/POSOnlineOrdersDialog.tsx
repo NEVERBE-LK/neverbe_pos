@@ -6,7 +6,6 @@ import {
   IconTruck,
   IconPackage,
   IconPrinter,
-  IconRefresh,
   IconCheck,
   IconChevronRight,
   IconUser,
@@ -223,13 +222,6 @@ export default function POSOnlineOrdersDialog({
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={fetchOrders}
-            className="flex items-center justify-center w-9 h-9 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all cursor-pointer"
-            title="Refresh Orders"
-          >
-            <IconRefresh size={18} />
-          </button>
           <button
             onClick={onClose}
             className="flex items-center justify-center w-9 h-9 rounded-xl text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all cursor-pointer"

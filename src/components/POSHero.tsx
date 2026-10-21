@@ -4,7 +4,6 @@ import {
   IconSearch,
   IconReceipt,
   IconSettings,
-  IconRefresh,
   IconArrowsExchange,
   IconLogout,
   IconCash,
@@ -196,12 +195,6 @@ export default function POSHero() {
     }
   };
 
-  const handleRefresh = () => {
-    if (selectedStockId) {
-      loadProducts(selectedStockId);
-      setQuery("");
-    }
-  };
 
   const handleLogout = async () => {
     try {
@@ -347,23 +340,12 @@ export default function POSHero() {
               prefix={<IconSearch size={20} className="text-zinc-400 mr-2 shrink-0" />}
               className="flex-1 font-semibold text-base rounded-xl bg-neutral-50 border-neutral-200 focus:bg-white focus:border-black hover:bg-white h-12"
             />
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                className="flex-1 sm:flex-none inline-flex items-center justify-center px-7 h-12 bg-black hover:bg-neutral-800 text-white font-extrabold text-xs uppercase tracking-widest rounded-xl transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer active:scale-98"
-              >
-                Search
-              </button>
-              <button
-                type="button"
-                onClick={handleRefresh}
-                className="flex items-center justify-center w-12 h-12 rounded-xl bg-neutral-100 hover:bg-neutral-200 text-neutral-700 border border-neutral-200 transition-all duration-200 shadow-xs cursor-pointer active:scale-95"
-                title="Refresh Product Catalog"
-                aria-label="Refresh Catalog"
-              >
-                <IconRefresh size={20} />
-              </button>
-            </div>
+            <button
+              type="submit"
+              className="flex-1 sm:flex-none inline-flex items-center justify-center px-7 h-12 bg-black hover:bg-neutral-800 text-white font-extrabold text-xs uppercase tracking-widest rounded-xl transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer active:scale-98"
+            >
+              Search
+            </button>
           </form>
         </div>
       </div>
