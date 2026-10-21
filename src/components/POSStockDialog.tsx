@@ -6,7 +6,7 @@ import { usePOS } from "../context/POSContext";
 import toast from "react-hot-toast";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase/firebaseClient";
-import { IconLogout, IconAlertTriangle, IconRefresh } from "@tabler/icons-react";
+import { IconLogout, IconAlertTriangle, IconRefresh, IconBuilding } from "@tabler/icons-react";
 
 export default function POSStockDialog() {
   const {
@@ -72,18 +72,20 @@ export default function POSStockDialog() {
     <>
       <Modal
         open={showStockDialog}
-        width={440}
+        width="min(640px, 95vw)"
+        centered
         closable={false}
         mask={{ closable: false }}
         keyboard={false}
         footer={null}
-        className="[&_.ant-modal-content]:rounded-3xl! [&_.ant-modal-content]:border-0! [&_.ant-modal-content]:shadow-2xl! [&_.ant-modal-content]:p-0! overflow-hidden"
+        styles={{ body: { padding: 0 } }}
+        className="[&_.ant-modal-content]:!rounded-3xl [&_.ant-modal-content]:!border-0 [&_.ant-modal-content]:!shadow-2xl [&_.ant-modal-content]:!p-0 overflow-hidden"
       >
         {/* Header */}
-        <div className="border-b border-neutral-800 bg-neutral-950 text-white p-6">
+        <div className="border-b border-neutral-800 bg-neutral-950 text-white px-6 py-5 rounded-t-3xl">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 block mb-1">
+              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 block mb-1 font-mono">
                 LOCATION CHECKPOINT
               </span>
               <h2 className="text-xl font-black text-white tracking-tight leading-tight">
@@ -107,16 +109,16 @@ export default function POSStockDialog() {
         </div>
 
         {/* Content */}
-        <div className="py-6 px-6">
+        <div className="p-6 max-h-[calc(86vh-130px)] overflow-y-auto">
           {isStocksLoading ? (
-            <div className="flex flex-col justify-center items-center py-8">
+            <div className="flex flex-col justify-center items-center py-16">
               <Spin size="large" />
               <p className="mt-3 text-[11px] font-bold uppercase tracking-wider text-neutral-400 font-mono">
                 Loading Locations...
               </p>
             </div>
           ) : stocks.length === 0 ? (
-            <div className="flex flex-col items-center justify-center py-6 px-2 text-center">
+            <div className="flex flex-col items-center justify-center py-10 px-2 text-center">
               <div className="w-12 h-12 rounded-2xl bg-red-500/10 text-red-500 flex items-center justify-center mb-3">
                 <IconAlertTriangle size={24} />
               </div>
@@ -147,27 +149,62 @@ export default function POSStockDialog() {
               </div>
             </div>
           ) : (
-            <div>
-              <label className="block text-[11px] font-black text-neutral-500 uppercase tracking-[0.15em] mb-2.5">
-                Terminal Stock Location
-              </label>
-              <Select
-                value={selectedStockId || undefined}
-                onChange={handleChange}
-                placeholder="Select location..."
-                className="w-full font-bold h-12 text-sm [&_.ant-select-selector]:!rounded-xl"
-                size="large"
-                options={stocks.map((stock) => ({
-                  value: stock.id,
-                  label: stock.label || stock.name,
-                }))}
-              />
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <label className="text-[11px] font-black text-neutral-500 uppercase tracking-[0.15em] font-mono">
+                  Available Terminal Locations
+                </label>
+                <span className="text-[10px] font-bold text-neutral-400 font-mono">
+                  {stocks.length} {stocks.length === 1 ? "location" : "locations"}
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {stocks.map((stock) => {
+                  const isSelected = selectedStockId === stock.id;
+                  return (
+                    <div
+                      key={stock.id}
+                      onClick={() => handleChange(stock.id)}
+                      className={`p-4 rounded-2xl border-2 transition-all cursor-pointer flex items-center gap-3.5 ${
+                        isSelected
+                          ? "border-black bg-neutral-950 text-white shadow-md shadow-black/10 scale-[1.01]"
+                          : "border-neutral-200 hover:border-black bg-white text-neutral-800"
+                      }`}
+                    >
+                      <div
+                        className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-colors ${
+                          isSelected ? "bg-neutral-800 text-white" : "bg-neutral-100 text-neutral-700"
+                        }`}
+                      >
+                        <IconBuilding size={20} />
+                      </div>
+                      <div className="min-w-0">
+                        <p
+                          className={`font-black text-xs uppercase tracking-wider truncate ${
+                            isSelected ? "text-white" : "text-neutral-900"
+                          }`}
+                        >
+                          {stock.label || stock.name}
+                        </p>
+                        <p
+                          className={`text-[10px] font-bold font-mono mt-0.5 truncate ${
+                            isSelected ? "text-neutral-400" : "text-neutral-400"
+                          }`}
+                        >
+                          ID: {stock.id}
+                        </p>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
 
         {/* Footer */}
-        <div className="flex justify-between items-center p-5 border-t border-neutral-100 bg-neutral-50/50 rounded-b-3xl">
+        <div className="flex justify-between items-center px-6 py-4 border-t border-neutral-100 bg-neutral-50/50 rounded-b-3xl">
           <Button
             type="text"
             danger
@@ -182,7 +219,7 @@ export default function POSStockDialog() {
             {selectedStockId && (
               <Button
                 onClick={closeStockDialog}
-                className="font-bold h-12 px-6 rounded-xl hover:bg-neutral-200/70 border-transparent text-neutral-600 text-xs uppercase tracking-wider"
+                className="font-bold h-11 px-6 rounded-xl hover:bg-neutral-200/70 border-transparent text-neutral-600 text-xs uppercase tracking-wider"
               >
                 Cancel
               </Button>
@@ -191,7 +228,7 @@ export default function POSStockDialog() {
               type="primary"
               onClick={handleConfirm}
               disabled={!selectedStockId || isStocksLoading || stocks.length === 0}
-              className="font-black h-12 px-8 rounded-xl shadow-md text-xs uppercase tracking-widest text-white !bg-black hover:!bg-neutral-800 disabled:!bg-neutral-300 transition-all"
+              className="font-black h-11 px-8 rounded-xl shadow-md text-xs uppercase tracking-widest text-white !bg-black hover:!bg-neutral-800 disabled:!bg-neutral-300 transition-all"
             >
               Confirm Location
             </Button>

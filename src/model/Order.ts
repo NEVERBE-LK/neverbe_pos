@@ -45,6 +45,13 @@ export interface Order {
   discount: number;
   from: string;
   stockId?: string;
+  deliveryAddress?: {
+    address?: string;
+    city?: string;
+    postalCode?: string;
+    state?: string;
+    [key: string]: any;
+  };
   paymentReceived?: Payment[];
 
   // Promotion & Coupon tracking

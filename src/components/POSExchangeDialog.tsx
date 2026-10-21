@@ -471,15 +471,17 @@ export default function POSExchangeDialog({
     <Modal
       open={open}
       onCancel={handleClose}
-      width={1000}
+      width="min(1240px, 96vw)"
       footer={null}
       closeIcon={null}
-      className="[&_.ant-modal-content]:!rounded-3xl [&_.ant-modal-content]:!border-0 [&_.ant-modal-content]:!shadow-2xl [&_.ant-modal-content]:!p-0 [&_.ant-modal-content]:!max-h-[90vh] overflow-hidden"
+      centered
+      styles={{ body: { padding: 0 } }}
+      className="[&_.ant-modal-content]:!rounded-3xl [&_.ant-modal-content]:!border-0 [&_.ant-modal-content]:!shadow-2xl [&_.ant-modal-content]:!p-0 overflow-hidden"
     >
       {/* Header */}
-      <div className="flex justify-between items-center p-6 border-b border-neutral-100 bg-neutral-900 text-white">
+      <div className="flex justify-between items-center px-7 py-5 border-b border-neutral-100 bg-neutral-900 text-white shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-neutral-800 flex items-center justify-center text-white">
+          <div className="w-10 h-10 rounded-xl bg-neutral-800 flex items-center justify-center text-white shrink-0">
             <IconArrowsExchange size={22} />
           </div>
           <div>
@@ -491,16 +493,15 @@ export default function POSExchangeDialog({
         </div>
         <button
           onClick={handleClose}
-          className="flex items-center justify-center w-8 h-8 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all"
+          className="flex items-center justify-center w-8 h-8 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all cursor-pointer"
         >
           <IconX size={20} />
         </button>
       </div>
 
-      {/* Content */}
+      {/* Content With Internal Scroll */}
       <div
-        className="p-6 overflow-y-auto"
-        style={{ maxHeight: "calc(90vh - 140px)" }}
+        className="p-6 overflow-y-auto max-h-[calc(86vh-90px)] min-h-[480px] bg-neutral-50/20"
       >
         {success ? (
           <div className="text-center py-8">

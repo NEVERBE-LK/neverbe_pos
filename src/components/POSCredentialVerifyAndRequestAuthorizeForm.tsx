@@ -151,18 +151,20 @@ export default function POSCredentialVerifyAndRequestAuthorizeForm({
         onCancel();
       }}
       footer={null}
-      width={420}
+      width="min(500px, 95vw)"
+      centered
       title={null}
       zIndex={3000}
-      className="[&_.ant-modal-content]:!rounded-3xl [&_.ant-modal-content]:!p-0 overflow-hidden shadow-2xl"
+      styles={{ body: { padding: 0 } }}
+      className="[&_.ant-modal-content]:!rounded-3xl [&_.ant-modal-content]:!border-0 [&_.ant-modal-content]:!p-0 overflow-hidden shadow-2xl"
     >
-      <div className="border-b border-neutral-100 bg-neutral-900 text-white p-6">
+      <div className="border-b border-neutral-800 bg-neutral-950 text-white px-6 py-5 rounded-t-3xl">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 bg-neutral-800 rounded-xl flex items-center justify-center text-white">
             <IconLock size={20} />
           </div>
           <div>
-            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 block mb-0.5">
+            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 block mb-0.5 font-mono">
               CLEARANCE OVERRIDE
             </span>
             <h3 className="text-lg font-black text-white leading-tight">
@@ -172,13 +174,13 @@ export default function POSCredentialVerifyAndRequestAuthorizeForm({
         </div>
       </div>
 
-      <div className="p-6 space-y-4">
+      <div className="p-6 space-y-4 max-h-[calc(86vh-120px)] overflow-y-auto">
         <p className="text-xs text-neutral-500 font-medium leading-relaxed">
           {description}
         </p>
 
         <div className="space-y-1.5">
-          <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest ml-1">
+          <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest ml-1 font-mono">
             Email Address
           </label>
           <Input
@@ -193,7 +195,7 @@ export default function POSCredentialVerifyAndRequestAuthorizeForm({
         </div>
 
         <div className="space-y-1.5">
-          <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest ml-1">
+          <label className="text-[10px] font-black text-neutral-500 uppercase tracking-widest ml-1 font-mono">
             Password
           </label>
           <Input.Password
@@ -214,7 +216,7 @@ export default function POSCredentialVerifyAndRequestAuthorizeForm({
               setPassword("");
               onCancel();
             }}
-            className="h-12 px-6 rounded-xl hover:bg-neutral-100 border-transparent text-neutral-600 font-bold text-xs uppercase tracking-wider"
+            className="h-11 px-6 rounded-xl hover:bg-neutral-100 border-transparent text-neutral-600 font-bold text-xs uppercase tracking-wider"
           >
             Cancel
           </Button>
@@ -222,7 +224,7 @@ export default function POSCredentialVerifyAndRequestAuthorizeForm({
             type="primary"
             loading={loading}
             onClick={handleVerify}
-            className="h-12 px-8 rounded-xl font-black text-xs uppercase tracking-widest text-white !bg-black hover:!bg-neutral-800 border-none shadow-md"
+            className="h-11 px-8 rounded-xl font-black text-xs uppercase tracking-widest text-white !bg-black hover:!bg-neutral-800 border-none shadow-md"
           >
             Authorize
           </Button>

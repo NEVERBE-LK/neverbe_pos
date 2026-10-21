@@ -378,15 +378,17 @@ export default function POSPaymentForm() {
     <Modal
       open={showPaymentDialog}
       onCancel={handleClose}
-      width={700}
+      width={completedOrder ? "min(900px, 95vw)" : "min(1020px, 95vw)"}
+      centered
       footer={null}
       closeIcon={null}
-      className="[&_.ant-modal-content]:!rounded-2xl [&_.ant-modal-content]:!border-0 [&_.ant-modal-content]:!shadow-xl [&_.ant-modal-content]:!p-0"
+      styles={{ body: { padding: 0 } }}
+      className="[&_.ant-modal-content]:!rounded-3xl [&_.ant-modal-content]:!border-0 [&_.ant-modal-content]:!shadow-2xl [&_.ant-modal-content]:!p-0 overflow-hidden"
     >
       {/* Header */}
-      <div className="flex justify-between items-center p-5 border-b border-neutral-100 bg-neutral-900 text-white rounded-t-2xl">
+      <div className="flex justify-between items-center px-6 py-5 border-b border-neutral-800 bg-neutral-950 text-white rounded-t-3xl">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-lg bg-neutral-800 flex items-center justify-center font-black text-xs text-white">
+          <div className="w-9 h-9 rounded-xl bg-neutral-800 flex items-center justify-center font-black text-xs text-white">
             Rs
           </div>
           <div>
@@ -407,16 +409,16 @@ export default function POSPaymentForm() {
         </div>
         <button
           onClick={handleClose}
-          className="flex items-center justify-center w-8 h-8 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all"
+          className="flex items-center justify-center w-8 h-8 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all cursor-pointer"
         >
           <IconX size={20} />
         </button>
       </div>
 
       {/* Content */}
-      <div className="p-5">
+      <div className="p-6 max-h-[calc(86vh-140px)] min-h-[440px] overflow-y-auto">
         {loading ? (
-          <div className="flex justify-center items-center py-12">
+          <div className="flex justify-center items-center py-24">
             <Spin size="large" />
           </div>
         ) : completedOrder ? (
@@ -507,153 +509,196 @@ export default function POSPaymentForm() {
             )}
           </div>
         ) : (
-          <div className="flex flex-col gap-4">
-            {/* Payments Table */}
-            <div className="border border-neutral-200/80 rounded-xl overflow-hidden">
-              <Table
-                dataSource={payments}
-                columns={paymentColumns}
-                rowKey="id"
-                size="small"
-                pagination={false}
-                locale={{ emptyText: "No payments added yet" }}
-              />
-            </div>
-
-            {/* Add Payment Form */}
-            <div className="flex flex-wrap gap-2.5 items-end p-3.5 bg-neutral-50 border border-neutral-200/80 rounded-xl">
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500">
-                  Method
-                </span>
-                <Select
-                  value={selectedPaymentMethod}
-                  onChange={(value) => setSelectedPaymentMethod(value)}
-                  style={{ width: 140 }}
-                  className="[&_.ant-select-selector]:!rounded-xl h-[40px] font-bold"
-                  options={availableMethods.map((m) => ({
-                    value: m.name.toLowerCase(),
-                    label: m.name,
-                  }))}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            {/* Left: Payments List & Add Payment Form (7 cols) */}
+            <div className="lg:col-span-7 flex flex-col gap-4">
+              {/* Payments Table */}
+              <div className="border border-neutral-200/80 rounded-2xl overflow-hidden shadow-xs bg-white">
+                <div className="px-4 py-2.5 bg-neutral-50/80 border-b border-neutral-100 flex items-center justify-between">
+                  <span className="text-[10px] font-black uppercase tracking-wider text-neutral-500 font-mono">
+                    Allocated Payments
+                  </span>
+                  <span className="text-[10px] font-bold text-neutral-400 font-mono">
+                    {payments.length} {payments.length === 1 ? "entry" : "entries"}
+                  </span>
+                </div>
+                <Table
+                  dataSource={payments}
+                  columns={paymentColumns}
+                  rowKey="id"
+                  size="small"
+                  pagination={false}
+                  locale={{ emptyText: "No payments added yet" }}
                 />
               </div>
 
-              {selectedMethod && (selectedMethod.customerFee || 0) > 0 && (
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500 whitespace-nowrap">
-                    Charge Fee ({selectedMethod.customerFee}%)
-                  </span>
-                  <div className="flex items-center justify-center h-[40px] w-[120px] bg-white border border-neutral-200 rounded-xl">
-                    <Switch
-                      checked={chargeCustomerFee}
-                      onChange={(checked) => setChargeCustomerFee(checked)}
-                      className={chargeCustomerFee ? "bg-black" : "bg-neutral-300"}
+              {/* Add Payment Form */}
+              <div className="p-4 bg-neutral-50/80 border border-neutral-200/80 rounded-2xl">
+                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500 block mb-3 font-mono">
+                  + Add Payment Tender
+                </span>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                  <div className="flex flex-col gap-1">
+                    <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500">
+                      Method
+                    </span>
+                    <Select
+                      value={selectedPaymentMethod}
+                      onChange={(value) => setSelectedPaymentMethod(value)}
+                      className="[&_.ant-select-selector]:!rounded-xl h-[42px] font-bold w-full"
+                      options={availableMethods.map((m) => ({
+                        value: m.name.toLowerCase(),
+                        label: m.name,
+                      }))}
                     />
                   </div>
-                </div>
-              )}
 
-              {selectedPaymentMethod === "card" && (
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500">
-                    Last 4
-                  </span>
-                  <Input
-                    value={cardNumber}
-                    onChange={(e) => setCardNumber(e.target.value.slice(0, 4))}
-                    maxLength={4}
-                    style={{ width: 80 }}
-                    className="rounded-xl h-[40px] font-mono font-bold"
-                  />
-                </div>
-              )}
+                  {selectedMethod && (selectedMethod.customerFee || 0) > 0 ? (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500 whitespace-nowrap">
+                        Customer Fee ({selectedMethod.customerFee}%)
+                      </span>
+                      <div className="flex items-center justify-between px-3 h-[42px] bg-white border border-neutral-200 rounded-xl">
+                        <span className="text-xs font-bold text-neutral-600">Charge Fee</span>
+                        <Switch
+                          checked={chargeCustomerFee}
+                          onChange={(checked) => setChargeCustomerFee(checked)}
+                          className={chargeCustomerFee ? "bg-black" : "bg-neutral-300"}
+                        />
+                      </div>
+                    </div>
+                  ) : selectedPaymentMethod === "card" ? (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500">
+                        Card Last 4
+                      </span>
+                      <Input
+                        value={cardNumber}
+                        onChange={(e) => setCardNumber(e.target.value.slice(0, 4))}
+                        maxLength={4}
+                        placeholder="e.g. 4242"
+                        className="rounded-xl h-[42px] font-mono font-bold w-full"
+                      />
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500">
+                        Reference / Note
+                      </span>
+                      <Input
+                        value={referenceId}
+                        onChange={(e) => setReferenceId(e.target.value)}
+                        placeholder="Optional"
+                        className="rounded-xl h-[42px] font-medium text-xs w-full"
+                      />
+                    </div>
+                  )}
 
-              <div className="flex flex-col gap-1">
-                <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500">
-                  Pay ID / Ref
-                </span>
-                <Input
-                  value={referenceId}
-                  onChange={(e) => setReferenceId(e.target.value)}
-                  placeholder="Optional"
-                  style={{ width: 110 }}
-                  className="rounded-xl h-[40px] font-medium text-xs"
-                />
-              </div>
+                  {selectedPaymentMethod === "card" && (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500">
+                        Reference ID
+                      </span>
+                      <Input
+                        value={referenceId}
+                        onChange={(e) => setReferenceId(e.target.value)}
+                        placeholder="Optional"
+                        className="rounded-xl h-[42px] font-medium text-xs w-full"
+                      />
+                    </div>
+                  )}
 
-              {hasCustomerFee ? (
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-emerald-700 whitespace-nowrap">
-                    Amount to Collect
-                  </span>
-                  <div className="flex items-center h-[40px] w-[130px] px-3 bg-emerald-50 border border-emerald-300 rounded-xl">
-                    <span className="font-black text-emerald-800 text-sm truncate font-mono">
-                      Rs. {preCalculatedAmount.toLocaleString()}
-                    </span>
+                  {hasCustomerFee ? (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black uppercase tracking-[0.15em] text-emerald-700 whitespace-nowrap">
+                        Amount to Collect
+                      </span>
+                      <div className="flex items-center h-[42px] px-3 bg-emerald-50 border border-emerald-300 rounded-xl">
+                        <span className="font-black text-emerald-800 text-sm truncate font-mono">
+                          Rs. {preCalculatedAmount.toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500">
+                        Amount (Rs)
+                      </span>
+                      <InputNumber
+                        value={paymentAmount ? parseFloat(paymentAmount) : undefined}
+                        onChange={(val) => setPaymentAmount(val?.toString() || "")}
+                        className="rounded-xl h-[42px] text-base font-black pt-0.5 w-full"
+                        min={0}
+                        placeholder="0.00"
+                      />
+                    </div>
+                  )}
+
+                  <div className="col-span-full">
+                    <Button
+                      type="primary"
+                      icon={<IconPlus size={18} />}
+                      onClick={handleAddPayment}
+                      className="w-full rounded-xl shadow-xs font-black text-xs uppercase tracking-wider !bg-black hover:!bg-neutral-800 text-white h-[42px]"
+                    >
+                      ADD PAYMENT TENDER
+                    </Button>
                   </div>
                 </div>
-              ) : (
-                <div className="flex flex-col gap-1">
-                  <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500">
-                    Amount (Rs)
-                  </span>
-                  <InputNumber
-                    value={
-                      paymentAmount ? parseFloat(paymentAmount) : undefined
-                    }
-                    onChange={(val) => setPaymentAmount(val?.toString() || "")}
-                    style={{ width: 120 }}
-                    className="rounded-xl h-[40px] text-base font-black pt-0.5"
-                    min={0}
-                  />
-                </div>
-              )}
-
-              <Button
-                type="primary"
-                icon={<IconPlus size={18} />}
-                onClick={handleAddPayment}
-                className="rounded-xl shadow-sm font-black text-xs uppercase tracking-wider !bg-black hover:!bg-neutral-800 text-white"
-                style={{ height: 40 }}
-              >
-                ADD
-              </Button>
+              </div>
             </div>
 
-            {/* Summary */}
-            <div className="p-4 rounded-2xl border border-neutral-200/80 bg-neutral-50 shadow-sm mt-1">
-              <div className="flex justify-between mb-1.5 text-xs text-neutral-600 font-medium">
-                <span className="uppercase tracking-wider">Subtotal:</span>
-                <span className="font-bold text-neutral-900">Rs. {itemsTotal.toLocaleString()}</span>
-              </div>
-              {totalDiscount > 0 && (
-                <div className="flex justify-between mb-1.5 text-xs text-red-500 font-medium">
-                  <span className="uppercase tracking-wider">Discount:</span>
-                  <span className="font-bold">-Rs. {totalDiscount.toLocaleString()}</span>
+            {/* Right: Summary Card (5 cols) */}
+            <div className="lg:col-span-5 flex flex-col gap-4">
+              <div className="p-5 rounded-2xl border border-neutral-200/80 bg-neutral-50/70 shadow-xs flex flex-col justify-between">
+                <div>
+                  <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 block mb-3 font-mono">
+                    TRANSACTION SUMMARY
+                  </span>
+                  <div className="space-y-2.5">
+                    <div className="flex justify-between text-xs text-neutral-600 font-medium">
+                      <span className="uppercase tracking-wider">Subtotal:</span>
+                      <span className="font-bold text-neutral-900">Rs. {itemsTotal.toLocaleString()}</span>
+                    </div>
+                    {totalDiscount > 0 && (
+                      <div className="flex justify-between text-xs text-red-500 font-medium">
+                        <span className="uppercase tracking-wider">Discount:</span>
+                        <span className="font-bold">-Rs. {totalDiscount.toLocaleString()}</span>
+                      </div>
+                    )}
+                    {customerFee > 0 && (
+                      <div className="flex justify-between p-2 bg-emerald-50 border border-dashed border-emerald-200 rounded-lg text-xs text-emerald-700 font-bold">
+                        <span className="uppercase tracking-wider">Customer Fee:</span>
+                        <span>Rs. {customerFee.toLocaleString()}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between text-xs text-neutral-600 font-medium">
+                      <span className="uppercase tracking-wider">Total Paid:</span>
+                      <span className="font-bold text-neutral-900">Rs. {paymentsTotal.toLocaleString()}</span>
+                    </div>
+                  </div>
                 </div>
-              )}
-              {customerFee > 0 && (
-                <div className="flex justify-between mb-1.5 p-2 bg-emerald-50 border border-dashed border-emerald-200 rounded-lg -mx-1 text-xs text-emerald-700 font-bold">
-                  <span className="uppercase tracking-wider">Customer Fee:</span>
-                  <span>Rs. {customerFee.toLocaleString()}</span>
+
+                <div className="mt-6 pt-4 border-t-2 border-neutral-900">
+                  <div className="flex justify-between items-baseline mb-1">
+                    <span className="font-black text-xs uppercase tracking-wider text-neutral-900">
+                      {pendingDue > 0 ? "Due Amount:" : "Change Due:"}
+                    </span>
+                    <span
+                      className={`font-black text-3xl tracking-tight font-mono ${
+                        pendingDue > 0 ? "text-red-500" : "text-emerald-600"
+                      }`}
+                    >
+                      Rs. {Math.abs(pendingDue).toLocaleString()}
+                    </span>
+                  </div>
+                  <p className="text-[10px] font-semibold text-neutral-400 uppercase tracking-wider mt-1">
+                    {pendingDue > 0
+                      ? "Additional payment required to complete"
+                      : "Return change to customer upon completion"}
+                  </p>
                 </div>
-              )}
-              <div className="flex justify-between mb-1.5 text-xs text-neutral-600 font-medium">
-                <span className="uppercase tracking-wider">Total Paid:</span>
-                <span className="font-bold text-neutral-900">Rs. {paymentsTotal.toLocaleString()}</span>
-              </div>
-              <div className="border-t-2 border-neutral-900 my-2.5" />
-              <div className="flex justify-between items-baseline">
-                <span className="font-black text-sm uppercase tracking-wider text-neutral-900">
-                  {pendingDue > 0 ? "Due Amount:" : "Change Due:"}
-                </span>
-                <span
-                  className={`font-black text-2xl tracking-tight ${
-                    pendingDue > 0 ? "text-red-500" : "text-emerald-600"
-                  }`}
-                >
-                  Rs. {Math.abs(pendingDue).toLocaleString()}
-                </span>
               </div>
             </div>
           </div>

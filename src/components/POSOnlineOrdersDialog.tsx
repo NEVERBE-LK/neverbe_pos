@@ -193,15 +193,17 @@ export default function POSOnlineOrdersDialog({
     <Modal
       open={open}
       onCancel={onClose}
-      width={1050}
+      width="min(1280px, 96vw)"
       footer={null}
       closeIcon={null}
+      centered
+      styles={{ body: { padding: 0 } }}
       className="[&_.ant-modal-content]:!rounded-3xl [&_.ant-modal-content]:!border-0 [&_.ant-modal-content]:!shadow-2xl [&_.ant-modal-content]:!p-0 overflow-hidden"
     >
       {/* Header */}
-      <div className="flex justify-between items-center p-6 border-b border-neutral-100 bg-neutral-900 text-white">
+      <div className="flex justify-between items-center px-7 py-5 border-b border-neutral-100 bg-neutral-900 text-white shrink-0">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-neutral-800 flex items-center justify-center text-white">
+          <div className="w-10 h-10 rounded-xl bg-neutral-800 flex items-center justify-center text-white shrink-0">
             <IconTruck size={22} />
           </div>
           <div>
@@ -235,10 +237,10 @@ export default function POSOnlineOrdersDialog({
         </div>
       </div>
 
-      {/* Main Content Layout */}
-      <div className="flex flex-col lg:flex-row h-[620px] bg-neutral-50/50">
+      {/* Main Content Layout - Fixed Viewport Height With Internal Scroll */}
+      <div className="flex flex-col lg:flex-row h-[calc(86vh-90px)] min-h-[540px] max-h-[740px] bg-neutral-50/50 overflow-hidden">
         {/* Left Column: Orders List */}
-        <div className="flex-1 flex flex-col border-r border-neutral-200/80 overflow-hidden bg-white">
+        <div className="w-full lg:w-[420px] shrink-0 flex flex-col border-r border-neutral-200/80 overflow-hidden bg-white">
           {/* Status Tabs & Search */}
           <div className="p-4 border-b border-neutral-200/80 space-y-3">
             <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
@@ -347,24 +349,38 @@ export default function POSOnlineOrdersDialog({
                   {getStatusBadge(selectedOrder.status)}
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-3 border-t border-neutral-100 text-xs">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-3 border-t border-neutral-100 text-xs">
                   <div>
                     <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
                       Customer
                     </span>
-                    <p className="font-bold text-neutral-900">{selectedOrder.customer?.name || "Guest"}</p>
+                    <p className="font-bold text-neutral-900 truncate">{selectedOrder.customer?.name || "Guest"}</p>
                     <p className="text-neutral-500 font-mono text-[11px]">{selectedOrder.customer?.phone || "No phone"}</p>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+                      Delivery Location
+                    </span>
+                    <p className="font-bold text-neutral-900 truncate">{selectedOrder.deliveryAddress?.city || "Standard Dispatch"}</p>
+                    <p className="text-neutral-500 text-[11px] truncate">{selectedOrder.deliveryAddress?.address || "Online Store Order"}</p>
                   </div>
                   <div>
                     <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
                       Payment
                     </span>
                     <p className="font-bold text-neutral-900">{selectedOrder.paymentMethod?.toUpperCase() || "COD"}</p>
-                    <span className={`text-[10px] font-black uppercase ${
-                      selectedOrder.paymentStatus?.toLowerCase() === "paid" ? "text-emerald-600" : "text-amber-600"
+                    <span className={`text-[10px] font-black uppercase inline-block mt-0.5 px-2 py-0.5 rounded ${
+                      selectedOrder.paymentStatus?.toLowerCase() === "paid" ? "bg-emerald-50 text-emerald-700" : "bg-amber-50 text-amber-700"
                     }`}>
                       {selectedOrder.paymentStatus || "Pending"}
                     </span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider block">
+                      Date & Source
+                    </span>
+                    <p className="font-bold text-neutral-900">{formatSLDate(selectedOrder.createdAt) || "Recently"}</p>
+                    <span className="text-[10px] font-mono text-neutral-400 uppercase">{selectedOrder.from || "Online Website"}</span>
                   </div>
                 </div>
               </div>
@@ -374,7 +390,7 @@ export default function POSOnlineOrdersDialog({
                 <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400 block">
                   ORDER ITEMS ({selectedOrder.items?.length || 0})
                 </span>
-                <div className="divide-y divide-neutral-100 max-h-48 overflow-y-auto pr-1">
+                <div className="divide-y divide-neutral-100 max-h-60 overflow-y-auto pr-1">
                   {selectedOrder.items?.map((item, idx) => (
                     <div key={idx} className="py-2.5 flex items-center justify-between gap-3 text-xs">
                       <div className="flex items-center gap-2.5">

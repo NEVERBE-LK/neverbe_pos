@@ -117,7 +117,7 @@ export default function POSNotificationDrawer({
       placement="right"
       onClose={onClose}
       open={open}
-      width={typeof window !== "undefined" && window.innerWidth < 640 ? "92%" : 460}
+      width={typeof window !== "undefined" && window.innerWidth < 640 ? "92%" : 540}
       styles={{ body: { padding: "16px", backgroundColor: "#f9fafb" } }}
     >
       {filtered.length === 0 ? (

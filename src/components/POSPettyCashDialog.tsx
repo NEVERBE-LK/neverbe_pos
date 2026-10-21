@@ -173,16 +173,17 @@ export default function POSPettyCashDialog({ open, onClose }: POSPettyCashDialog
     <Modal
       open={open}
       onCancel={onClose}
-      width={1000}
+      width="min(1240px, 96vw)"
       footer={null}
       centered
+      styles={{ body: { padding: 0 } }}
       title={
-        <div className="flex items-center gap-3 py-2">
+        <div className="flex items-center gap-3 py-1">
           <div className="w-10 h-10 bg-neutral-900 rounded-xl flex items-center justify-center text-white">
             <IconCash size={22} />
           </div>
           <div className="flex flex-col">
-            <span className="text-[10px] uppercase font-black tracking-[0.2em] text-neutral-400">
+            <span className="text-[10px] uppercase font-black tracking-[0.2em] text-neutral-400 font-mono">
               CASH MANAGEMENT
             </span>
             <Text className="text-lg font-black tracking-tight text-neutral-900 leading-none">
@@ -191,137 +192,136 @@ export default function POSPettyCashDialog({ open, onClose }: POSPettyCashDialog
           </div>
         </div>
       }
-      className="[&_.ant-modal-content]:!rounded-3xl [&_.ant-modal-header]:!mb-6 [&_.ant-modal-header]:!border-b [&_.ant-modal-header]:!pb-4"
+      className="[&_.ant-modal-content]:!rounded-3xl [&_.ant-modal-content]:!p-0 [&_.ant-modal-content]:!overflow-hidden [&_.ant-modal-header]:!m-0 [&_.ant-modal-header]:!p-6 [&_.ant-modal-header]:!border-b [&_.ant-modal-header]:!border-neutral-100"
     >
-      <div className="flex flex-col gap-8">
-        {/* Form Section (Top) */}
-        <div className="w-full space-y-6">
-          <div className="bg-neutral-50/70 p-6 rounded-2xl border border-neutral-200/80 shadow-sm">
-            <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-neutral-500 mb-5 border-b border-neutral-200 pb-2 flex items-center gap-2">
-              <IconPlus size={14} /> New Expense Transaction
-            </h3>
-            <Form form={form} layout="vertical" onFinish={handleFinish} requiredMark={false} initialValues={{ type: "expense", paymentMethod: "cash", date: dayjs() }}>
-              <Row gutter={16}>
-                <Col span={12}>
-                  <Form.Item name="date" label="Date" rules={[{ required: true, message: "Required" }]}>
-                    <DatePicker
-                      className="w-full"
-                      size="large"
-                      format="YYYY-MM-DD"
-                      disabledDate={(current) => {
-                        return current && (current.month() !== dayjs().month() || current.year() !== dayjs().year());
-                      }}
-                    />
-                  </Form.Item>
-                </Col>
-                <Col span={12}>
-                  <Form.Item name="type" label="Type" rules={[{ required: true }]}>
-                    <Select size="large">
-                      <Select.Option value="expense">EXPENSE</Select.Option>
-                      <Select.Option value="income">INCOME</Select.Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-              </Row>
+      <div className="p-6 max-h-[calc(86vh-90px)] min-h-[500px] overflow-y-auto">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          {/* Form Section (Left, 5 cols) */}
+          <div className="lg:col-span-5 space-y-4">
+            <div className="bg-neutral-50/70 p-5 rounded-2xl border border-neutral-200/80 shadow-xs">
+              <h3 className="text-[11px] font-black uppercase tracking-[0.2em] text-neutral-500 mb-4 border-b border-neutral-200/80 pb-2 flex items-center gap-2 font-mono">
+                <IconPlus size={14} /> New Expense Transaction
+              </h3>
+              <Form form={form} layout="vertical" onFinish={handleFinish} requiredMark={false} initialValues={{ type: "expense", paymentMethod: "cash", date: dayjs() }}>
+                <Row gutter={12}>
+                  <Col span={12}>
+                    <Form.Item name="date" label="Date" rules={[{ required: true, message: "Required" }]}>
+                      <DatePicker
+                        className="w-full"
+                        size="large"
+                        format="YYYY-MM-DD"
+                        disabledDate={(current) => {
+                          return current && (current.month() !== dayjs().month() || current.year() !== dayjs().year());
+                        }}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item name="type" label="Type" rules={[{ required: true }]}>
+                      <Select size="large">
+                        <Select.Option value="expense">EXPENSE</Select.Option>
+                        <Select.Option value="income">INCOME</Select.Option>
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                </Row>
 
-              <Row gutter={16}>
-                <Col span={24}>
-                  <Form.Item name="amount" label="Amount (LKR)" rules={[{ required: true, message: "Required" }]}>
-                    <InputNumber className="w-full" style={{ width: '100%' }} min={1} size="large" placeholder="0.00" />
-                  </Form.Item>
-                </Col>
-              </Row>
+                <Row gutter={12}>
+                  <Col span={12}>
+                    <Form.Item name="amount" label="Amount (LKR)" rules={[{ required: true, message: "Required" }]}>
+                      <InputNumber className="w-full" style={{ width: '100%' }} min={1} size="large" placeholder="0.00" />
+                    </Form.Item>
+                  </Col>
+                  <Col span={12}>
+                    <Form.Item name="paymentMethod" label="Payment Method" rules={[{ required: true }]}>
+                      <Select size="large">
+                        <Select.Option value="cash">CASH</Select.Option>
+                        <Select.Option value="card">CARD / ONLINE</Select.Option>
+                        <Select.Option value="transfer">BANK TRANSFER</Select.Option>
+                      </Select>
+                    </Form.Item>
+                  </Col>
+                </Row>
 
-              <Form.Item name="category" label="Category" rules={[{ required: true, message: "Required" }]}>
-                <Select placeholder="Select Category" size="large">
-                  {categories.map((cat) => (
-                    <Select.Option key={cat.id} value={cat.label}>
-                      {cat.label}
-                    </Select.Option>
-                  ))}
-                </Select>
-              </Form.Item>
+                <Form.Item name="category" label="Category" rules={[{ required: true, message: "Required" }]}>
+                  <Select placeholder="Select Category" size="large">
+                    {categories.map((cat) => (
+                      <Select.Option key={cat.id} value={cat.label}>
+                        {cat.label}
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </Form.Item>
 
-              <Form.Item name="note" label="Note / Description" rules={[{ required: true, message: "Required" }]}>
-                <Input.TextArea rows={3} placeholder="Enter details..." size="large" />
-              </Form.Item>
+                <Form.Item name="note" label="Note / Description" rules={[{ required: true, message: "Required" }]}>
+                  <Input.TextArea rows={2} placeholder="Enter details..." size="large" />
+                </Form.Item>
 
-              <Row gutter={16}>
-                <Col span={24}>
-                  <Form.Item name="paymentMethod" label="Payment Method" rules={[{ required: true }]}>
-                    <Select size="large">
-                      <Select.Option value="cash">CASH</Select.Option>
-                      <Select.Option value="card">CARD / ONLINE</Select.Option>
-                      <Select.Option value="transfer">BANK TRANSFER</Select.Option>
-                    </Select>
-                  </Form.Item>
-                </Col>
-              </Row>
+                <Form.Item label="Attachment (Optional)">
+                  <Upload
+                    beforeUpload={() => false}
+                    fileList={fileList}
+                    onChange={({ fileList }) => setFileList(fileList.slice(-1))}
+                    maxCount={1}
+                  >
+                    <Button icon={<IconFileUpload size={18} />} className="w-full h-10 rounded-xl border-dashed border-neutral-300 hover:border-black hover:text-black transition-all">
+                      Select Receipt / File
+                    </Button>
+                  </Upload>
+                </Form.Item>
 
-              <Form.Item label="Attachment (Optional)">
-                <Upload
-                  beforeUpload={() => false}
-                  fileList={fileList}
-                  onChange={({ fileList }) => setFileList(fileList.slice(-1))}
-                  maxCount={1}
-                >
-                  <Button icon={<IconFileUpload size={18} />} className="w-full h-11 rounded-xl border-dashed border-neutral-300 hover:border-black hover:text-black transition-all">
-                    Select Receipt / File
+                <Form.Item className="mb-0 mt-5">
+                  <Button
+                    type="primary"
+                    htmlType="submit"
+                    loading={loading}
+                    className="w-full h-11 !bg-black hover:!bg-neutral-800 border-none rounded-xl font-black text-xs uppercase tracking-widest text-white flex items-center justify-center gap-2 shadow-md shadow-black/10 transition-all hover:scale-[1.01]"
+                    icon={<IconPlus size={18} />}
+                  >
+                    Save Transaction
                   </Button>
-                </Upload>
-              </Form.Item>
+                </Form.Item>
+              </Form>
+            </div>
 
-              <Form.Item className="mb-0 mt-6">
-                <Button
-                  type="primary"
-                  htmlType="submit"
-                  loading={loading}
-                  className="w-full h-12 !bg-black hover:!bg-neutral-800 border-none rounded-xl font-black text-xs uppercase tracking-widest text-white flex items-center justify-center gap-2 shadow-lg shadow-black/10 transition-all hover:scale-[1.01]"
-                  icon={<IconPlus size={18} />}
-                >
-                  Save Transaction
-                </Button>
-              </Form.Item>
-            </Form>
+            <div className="p-3.5 bg-neutral-100 border border-neutral-200/80 rounded-2xl text-[11px] text-neutral-600 font-medium leading-relaxed">
+              Note: Recent transactions update monthly reports. Ensure receipts are attached for verification.
+            </div>
           </div>
 
-          <div className="p-4 bg-neutral-100 border border-neutral-200 rounded-2xl text-[11px] text-neutral-600 font-bold leading-relaxed">
-            Note: Recent transactions update monthly reports. Ensure receipts are attached for accounting verification.
-          </div>
-        </div>
+          {/* List Section (Right, 7 cols) */}
+          <div className="lg:col-span-7 space-y-3">
+            <div className="flex items-center justify-between px-1">
+              <div className="flex items-center gap-2">
+                <IconReceipt size={16} className="text-neutral-500" />
+                <h3 className="text-xs font-black uppercase tracking-wider text-neutral-800 font-mono">
+                  Transaction History
+                </h3>
+              </div>
+              <Tag color="green" className="rounded-full px-2.5 py-0.5 border-none font-bold text-[10px] font-mono">
+                {expenses.length} Total
+              </Tag>
+            </div>
 
-        <Divider className="m-0 border-gray-100" />
-
-        {/* List Section (Bottom) */}
-        <div className="w-full space-y-4">
-          <div className="flex items-center justify-between px-2">
-            <h3 className="text-sm font-black uppercase tracking-[0.1em] text-gray-800 flex items-center gap-2">
-              <IconReceipt size={18} className="text-gray-400" />
-              Transaction History
-            </h3>
-            <Tag color="green" className="rounded-full px-3 py-0.5 border-none font-bold text-[10px]">
-              {expenses.length} Total
-            </Tag>
-          </div>
-
-          <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden shadow-sm">
-            <Table
-              dataSource={expenses}
-              columns={columns}
-              rowKey="id"
-              loading={loading}
-              pagination={{ pageSize: 8, showSizeChanger: false, position: ["bottomRight"] }}
-              size="middle"
-              className="pos-table"
-              locale={{
-                emptyText: (
-                  <div className="py-12 flex flex-col items-center justify-center text-gray-300">
-                    <IconReceipt size={48} stroke={1} />
-                    <p className="mt-2 text-sm font-bold uppercase tracking-widest">No Transactions Found</p>
-                  </div>
-                )
-              }}
-            />
+            <div className="bg-white border border-neutral-200/80 rounded-2xl overflow-hidden shadow-xs">
+              <Table
+                dataSource={expenses}
+                columns={columns}
+                rowKey="id"
+                loading={loading}
+                pagination={{ pageSize: 7, showSizeChanger: false, position: ["bottomRight"] }}
+                size="small"
+                className="pos-table"
+                locale={{
+                  emptyText: (
+                    <div className="py-12 flex flex-col items-center justify-center text-gray-300">
+                      <IconReceipt size={48} stroke={1} />
+                      <p className="mt-2 text-sm font-bold uppercase tracking-widest">No Transactions Found</p>
+                    </div>
+                  )
+                }}
+              />
+            </div>
           </div>
         </div>
       </div>

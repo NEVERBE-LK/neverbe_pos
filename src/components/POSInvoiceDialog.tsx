@@ -270,18 +270,19 @@ export default function POSInvoiceDialog({
     <Modal
       open={open}
       onCancel={handleClose}
-      width={selectedOrder ? 800 : 700}
+      width={selectedOrder ? "min(980px, 95vw)" : "min(1160px, 95vw)"}
       footer={
-        <div className="flex justify-end gap-3 p-4 border-t border-neutral-100 bg-neutral-50/50">
+        <div className="flex justify-end gap-3 p-4 border-t border-neutral-100 bg-neutral-50/50 shrink-0">
           {footerButtons}
         </div>
       }
       closeIcon={null}
+      centered
       styles={{ body: { padding: 0 } }}
       className="[&_.ant-modal-content]:!rounded-3xl [&_.ant-modal-content]:!border-0 [&_.ant-modal-content]:!shadow-2xl [&_.ant-modal-content]:!p-0 overflow-hidden"
     >
       {/* Header */}
-      <div className="flex justify-between items-center p-6 border-b border-neutral-100 bg-neutral-900 text-white">
+      <div className="flex justify-between items-center px-7 py-5 border-b border-neutral-100 bg-neutral-900 text-white shrink-0">
         <div className="flex items-center gap-3">
           {selectedOrder && receiptMode !== "choice" && (
             <button
@@ -305,14 +306,14 @@ export default function POSInvoiceDialog({
         </div>
         <button
           onClick={handleClose}
-          className="flex items-center justify-center w-8 h-8 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all"
+          className="flex items-center justify-center w-8 h-8 rounded-full text-neutral-400 hover:text-white hover:bg-neutral-800 transition-all cursor-pointer"
         >
           <IconX size={20} />
         </button>
       </div>
 
-      {/* Content */}
-      <div className="p-0">
+      {/* Content With Internal Scroll */}
+      <div className="p-0 max-h-[calc(85vh-140px)] min-h-[460px] overflow-y-auto bg-neutral-50/30">
         {selectedOrder ? (
           <div className="flex flex-col items-center p-6 bg-white min-h-[450px]">
             <div className="text-center w-full bg-neutral-950 text-white border border-neutral-800 rounded-2xl p-6 mb-6">
