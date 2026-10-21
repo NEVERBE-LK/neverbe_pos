@@ -10,6 +10,7 @@ import {
   IconCash,
   IconMapPin,
   IconTruck,
+  IconBell,
 } from "@tabler/icons-react";
 import { usePOS } from "../context/POSContext";
 import POSInvoiceDialog from "./POSInvoiceDialog";
@@ -17,6 +18,8 @@ import POSSettingsDialog from "./POSSettingsDialog";
 import POSExchangeDialog from "./POSExchangeDialog";
 import POSPettyCashDialog from "./POSPettyCashDialog";
 import POSOnlineOrdersDialog from "./POSOnlineOrdersDialog";
+import POSNotificationDrawer from "./POSNotificationDrawer";
+import { usePOSNotifications } from "../hooks/usePOSNotifications";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase/firebaseClient";
 import toast from "react-hot-toast";
@@ -42,6 +45,15 @@ export default function POSHero() {
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
   const [showPettyCashDialog, setShowPettyCashDialog] = useState(false);
   const [showOnlineOrdersDialog, setShowOnlineOrdersDialog] = useState(false);
+  const [showNotificationsDrawer, setShowNotificationsDrawer] = useState(false);
+  const [targetOrderId, setTargetOrderId] = useState<string | null>(null);
+
+  const { notifications, unreadCount, markAsRead, markAllAsRead } = usePOSNotifications();
+
+  const handleOpenOrderFromNotification = (orderId: string) => {
+    setTargetOrderId(orderId);
+    setShowOnlineOrdersDialog(true);
+  };
 
   // Verification gate state
   const [verifyOpen, setVerifyOpen] = useState(false);
@@ -215,7 +227,28 @@ export default function POSHero() {
                 aria-label="Online Orders"
               >
                 <IconTruck size={20} />
-                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white" />
+                {unreadCount > 0 ? (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-emerald-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white font-mono">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                ) : (
+                  <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white" />
+                )}
+              </button>
+            </Tooltip>
+            <Tooltip title={`Order Alerts (${unreadCount} unread)`}>
+              <button
+                type="button"
+                onClick={() => setShowNotificationsDrawer(true)}
+                className="flex items-center justify-center w-11 h-11 rounded-xl bg-neutral-100 hover:bg-black text-neutral-700 hover:text-white border border-neutral-200 transition-all duration-200 shadow-xs hover:shadow-md shrink-0 cursor-pointer relative"
+                aria-label="Order Alerts"
+              >
+                <IconBell size={20} />
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-red-600 text-white text-[9px] font-black rounded-full flex items-center justify-center border-2 border-white font-mono animate-pulse">
+                    {unreadCount > 9 ? "9+" : unreadCount}
+                  </span>
+                )}
               </button>
             </Tooltip>
             <Tooltip title="Petty Cash">
@@ -286,8 +319,21 @@ export default function POSHero() {
       {/* Action Dialogs */}
       <POSOnlineOrdersDialog
         open={showOnlineOrdersDialog}
-        onClose={() => setShowOnlineOrdersDialog(false)}
+        onClose={() => {
+          setShowOnlineOrdersDialog(false);
+          setTargetOrderId(null);
+        }}
         selectedStockId={selectedStockId}
+        initialOrderId={targetOrderId}
+      />
+      <POSNotificationDrawer
+        open={showNotificationsDrawer}
+        onClose={() => setShowNotificationsDrawer(false)}
+        notifications={notifications}
+        unreadCount={unreadCount}
+        onMarkAsRead={markAsRead}
+        onMarkAllAsRead={markAllAsRead}
+        onOpenOrder={handleOpenOrderFromNotification}
       />
       <POSInvoiceDialog open={showInvoicesForm} onClose={() => setShowInvoicesForm(false)} />
       <POSSettingsDialog open={showSettingsDialog} onClose={() => setShowSettingsDialog(false)} />

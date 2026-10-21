@@ -25,12 +25,14 @@ interface POSOnlineOrdersDialogProps {
   open: boolean;
   onClose: () => void;
   selectedStockId?: string | null;
+  initialOrderId?: string | null;
 }
 
 export default function POSOnlineOrdersDialog({
   open,
   onClose,
   selectedStockId,
+  initialOrderId,
 }: POSOnlineOrdersDialogProps) {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(false);
@@ -42,9 +44,13 @@ export default function POSOnlineOrdersDialog({
 
   useEffect(() => {
     if (open) {
+      if (initialOrderId) {
+        setSearchQuery(initialOrderId);
+        setActiveTab("ALL");
+      }
       fetchOnlineOrders();
     }
-  }, [open, activeTab, selectedStockId]);
+  }, [open, activeTab, selectedStockId, initialOrderId]);
 
   const fetchOnlineOrders = async () => {
     setLoading(true);
