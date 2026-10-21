@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { Modal, Button, InputNumber, Spin, Tag } from "antd";
-import { IconX, IconMinus, IconPlus } from "@tabler/icons-react";
+import { IconX, IconMinus, IconPlus, IconLock } from "@tabler/icons-react";
 import { usePOS } from "../context/POSContext";
 import toast from "react-hot-toast";
 import api from "@/lib/api";
+import POSCredentialVerifyAndRequestAuthorizeForm from "./POSCredentialVerifyAndRequestAuthorizeForm";
 
 interface POSVariantDialogProps {
   open: boolean;
@@ -27,6 +28,22 @@ export default function POSVariantDialog({
   const [inventory, setInventory] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [adding, setAdding] = useState(false);
+
+  // Manual discount security clearance
+  const checkManualDiscountPermission = () => {
+    const role = (localStorage.getItem("neverbePOSUserRole") || "").toLowerCase();
+    if (role === "admin") return true;
+    try {
+      const perms = JSON.parse(localStorage.getItem("neverbePOSUserPermissions") || "[]");
+      return Array.isArray(perms) && perms.includes("apply_manual_discount");
+    } catch {
+      return false;
+    }
+  };
+
+  const [hasDiscountAuth, setHasDiscountAuth] = useState(false);
+  const [showDiscountAuthModal, setShowDiscountAuthModal] = useState(false);
+  const isDiscountAllowed = checkManualDiscountPermission() || hasDiscountAuth;
 
   // Calculate automatic discount and rounded price
   const basePrice = product?.sellingPrice || 0;
@@ -158,6 +175,12 @@ export default function POSVariantDialog({
       toast("Warning: Quantity exceeds available stock", { icon: "⚠️" });
     }
 
+    if (discount > 0 && !isDiscountAllowed) {
+      toast.error("Manual discount blocked: Security clearance required");
+      setShowDiscountAuthModal(true);
+      return;
+    }
+
     setAdding(true);
     try {
       const itemData = {
@@ -195,6 +218,7 @@ export default function POSVariantDialog({
   if (!product) return null;
 
   return (
+    <>
     <Modal
       open={open}
       onCancel={onClose}
@@ -374,14 +398,43 @@ export default function POSVariantDialog({
 
             {/* Discount */}
             <div>
-              <p className="text-[11px] font-black uppercase tracking-[0.15em] text-neutral-500 mb-2.5">
-                Manual Discount (Rs.)
-              </p>
+              <div className="flex items-center justify-between mb-2.5">
+                <div className="flex items-center gap-2">
+                  <p className="text-[11px] font-black uppercase tracking-[0.15em] text-neutral-500">
+                    Manual Discount (Rs.)
+                  </p>
+                  {!isDiscountAllowed && (
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider bg-amber-500/10 text-amber-600 border border-amber-500/20">
+                      <IconLock size={10} /> Locked
+                    </span>
+                  )}
+                </div>
+                {!isDiscountAllowed && (
+                  <button
+                    type="button"
+                    onClick={() => setShowDiscountAuthModal(true)}
+                    className="text-[10px] font-black uppercase tracking-wider text-neutral-900 underline hover:text-black cursor-pointer"
+                  >
+                    Authorize Clearance
+                  </button>
+                )}
+              </div>
               <InputNumber
                 value={discount}
-                onChange={(val) => setDiscount(Math.max(0, val || 0))}
+                onChange={(val) => {
+                  if (!isDiscountAllowed) {
+                    toast.error("Blocked: Security clearance 'apply_manual_discount' required");
+                    setShowDiscountAuthModal(true);
+                    return;
+                  }
+                  setDiscount(Math.max(0, val || 0));
+                }}
+                disabled={!isDiscountAllowed}
                 min={0}
-                className="w-full font-bold [&_.ant-input-number-input]:!h-11 rounded-xl"
+                placeholder={!isDiscountAllowed ? "Locked · Permission required" : "0"}
+                className={`w-full font-bold [&_.ant-input-number-input]:!h-11 rounded-xl ${
+                  !isDiscountAllowed ? "!bg-neutral-100 !opacity-60 cursor-not-allowed" : ""
+                }`}
                 size="large"
               />
             </div>
@@ -441,5 +494,19 @@ export default function POSVariantDialog({
         </Button>
       </div>
     </Modal>
+
+    <POSCredentialVerifyAndRequestAuthorizeForm
+      open={showDiscountAuthModal}
+      onCancel={() => setShowDiscountAuthModal(false)}
+      onSuccess={() => {
+        setHasDiscountAuth(true);
+        setShowDiscountAuthModal(false);
+        toast.success("Manual discount clearance authorized");
+      }}
+      title="Authorize Manual Discount"
+      description="Applying manual discounts requires supervisor or admin security clearance ('apply_manual_discount'). Please enter authorized credentials."
+      requiredPermission="apply_manual_discount"
+    />
+  </>
   );
 }

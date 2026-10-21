@@ -9,7 +9,9 @@ import POSStockDialog from "./POSStockDialog";
 import { usePOS } from "../context/POSContext";
 
 export default function POSContent() {
-  const { isProductsLoading } = usePOS();
+  const { isProductsLoading, stocks, selectedStockId } = usePOS();
+  const currentStock = stocks?.find((s) => s.id === selectedStockId);
+  const storeName = currentStock?.label || currentStock?.name || "NEVERBE Store";
 
   return (
     <div className="flex flex-col min-h-screen lg:h-screen w-full bg-[#f6f7f6] overflow-auto lg:overflow-hidden select-none font-sans">
@@ -40,14 +42,14 @@ export default function POSContent() {
       </div>
 
       {/* Sportswear Minimal Sub-Footer */}
-      <footer className="bg-white border-t border-neutral-200/80 py-2.5 px-5 flex flex-col sm:flex-row justify-between items-center gap-2 text-[10px] font-extrabold text-zinc-400 tracking-widest uppercase z-10 shrink-0">
+      <footer className="bg-white border-t border-neutral-200/80 py-2.5 px-5 flex flex-col sm:flex-row justify-between items-center gap-2 text-[10px] font-black text-neutral-400 tracking-widest uppercase z-10 shrink-0">
         <span className="flex items-center gap-2">
           <span>&copy; {new Date().getFullYear()} NEVERBE POS</span>
-          <span className="text-zinc-300">·</span>
-          <span>Delgoda Flagship Store</span>
+          <span className="text-neutral-300">·</span>
+          <span className="text-neutral-900 font-black">{storeName}</span>
         </span>
-        <span>
-          Secured Point of Sale Terminal · v2.0
+        <span className="text-neutral-500 font-bold">
+          Secured Point of Sale Terminal
         </span>
       </footer>
     </div>

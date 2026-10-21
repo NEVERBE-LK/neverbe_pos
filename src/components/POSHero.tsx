@@ -9,12 +9,14 @@ import {
   IconLogout,
   IconCash,
   IconMapPin,
+  IconTruck,
 } from "@tabler/icons-react";
 import { usePOS } from "../context/POSContext";
 import POSInvoiceDialog from "./POSInvoiceDialog";
 import POSSettingsDialog from "./POSSettingsDialog";
 import POSExchangeDialog from "./POSExchangeDialog";
 import POSPettyCashDialog from "./POSPettyCashDialog";
+import POSOnlineOrdersDialog from "./POSOnlineOrdersDialog";
 import { signOut } from "firebase/auth";
 import { auth } from "@/firebase/firebaseClient";
 import toast from "react-hot-toast";
@@ -39,6 +41,7 @@ export default function POSHero() {
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showExchangeDialog, setShowExchangeDialog] = useState(false);
   const [showPettyCashDialog, setShowPettyCashDialog] = useState(false);
+  const [showOnlineOrdersDialog, setShowOnlineOrdersDialog] = useState(false);
 
   // Verification gate state
   const [verifyOpen, setVerifyOpen] = useState(false);
@@ -93,6 +96,24 @@ export default function POSHero() {
       "Accessing petty cash management requires security clearance. Please enter your password.",
       () => setShowPettyCashDialog(true)
     );
+  };
+
+  const handleOnlineOrdersClick = () => {
+    const role = (localStorage.getItem("neverbePOSUserRole") || "").toLowerCase();
+    const permsRaw = localStorage.getItem("neverbePOSUserPermissions");
+    const permissions: string[] = permsRaw ? JSON.parse(permsRaw) : [];
+    const isAllowed = role === "admin" || permissions.includes("process_online_orders");
+
+    if (isAllowed) {
+      setShowOnlineOrdersDialog(true);
+    } else {
+      requestVerify(
+        "process_online_orders",
+        "Verify Online Orders Access",
+        "Processing online orders requires security clearance ('process_online_orders'). Please enter authorized credentials.",
+        () => setShowOnlineOrdersDialog(true)
+      );
+    }
   };
 
   const handleSearch = (e: React.FormEvent) => {
@@ -186,6 +207,17 @@ export default function POSHero() {
                 <IconReceipt size={20} />
               </button>
             </Tooltip>
+            <Tooltip title="Online Orders Processing">
+              <button
+                type="button"
+                onClick={handleOnlineOrdersClick}
+                className="flex items-center justify-center w-11 h-11 rounded-xl bg-neutral-100 hover:bg-black text-neutral-700 hover:text-white border border-neutral-200 transition-all duration-200 shadow-xs hover:shadow-md shrink-0 cursor-pointer relative"
+                aria-label="Online Orders"
+              >
+                <IconTruck size={20} />
+                <span className="absolute -top-1 -right-1 w-2.5 h-2.5 bg-emerald-500 rounded-full border-2 border-white" />
+              </button>
+            </Tooltip>
             <Tooltip title="Petty Cash">
               <button
                 type="button"
@@ -252,6 +284,11 @@ export default function POSHero() {
       </div>
 
       {/* Action Dialogs */}
+      <POSOnlineOrdersDialog
+        open={showOnlineOrdersDialog}
+        onClose={() => setShowOnlineOrdersDialog(false)}
+        selectedStockId={selectedStockId}
+      />
       <POSInvoiceDialog open={showInvoicesForm} onClose={() => setShowInvoicesForm(false)} />
       <POSSettingsDialog open={showSettingsDialog} onClose={() => setShowSettingsDialog(false)} />
       <POSExchangeDialog open={showExchangeDialog} onClose={() => setShowExchangeDialog(false)} />
