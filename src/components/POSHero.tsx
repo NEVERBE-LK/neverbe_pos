@@ -169,17 +169,14 @@ export default function POSHero() {
 
             {/* Location Pill */}
             <div
-              className="flex items-center gap-2 px-4 h-11 rounded-xl bg-neutral-950 text-white cursor-pointer transition-all duration-200 hover:bg-neutral-800 shadow-sm shrink-0 group"
+              className="flex items-center gap-2 px-3.5 h-11 rounded-xl bg-neutral-950 text-white cursor-pointer transition-all duration-200 hover:bg-neutral-800 shadow-sm shrink-0 group"
               onClick={handleLocationClick}
               role="button"
               tabIndex={0}
               aria-label="Change Stock Location"
             >
               <IconMapPin size={16} className="text-zinc-400 group-hover:text-white shrink-0 transition-colors" />
-              <span className="text-[10px] font-extrabold uppercase tracking-widest text-zinc-400 group-hover:text-zinc-200">
-                Location:
-              </span>
-              <span className="text-xs font-black uppercase text-white truncate max-w-[180px]">
+              <span className="text-xs font-black uppercase text-white truncate max-w-[200px]">
                 {currentStock?.label || currentStock?.name || "Select Stock"}
               </span>
             </div>
