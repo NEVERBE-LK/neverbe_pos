@@ -329,20 +329,27 @@ export default function POSHero() {
           </div>
         </div>
 
-        {/* Search & Refresh Row */}
-        <div className="p-3 bg-white rounded-2xl shadow-sm border border-neutral-200/80">
-          <form onSubmit={handleSearch} className="flex flex-col sm:flex-row gap-2.5 w-full">
+        {/* Search Row */}
+        <div className="p-2.5 sm:p-3 bg-white rounded-2xl shadow-sm border border-neutral-200/80">
+          <form onSubmit={handleSearch} className="flex items-center gap-2 sm:gap-2.5 w-full">
             <Input
               size="large"
+              allowClear
               placeholder="Search products by name, brand, or SKU..."
               value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              prefix={<IconSearch size={20} className="text-zinc-400 mr-2 shrink-0" />}
-              className="flex-1 font-semibold text-base rounded-xl bg-neutral-50 border-neutral-200 focus:bg-white focus:border-black hover:bg-white h-12"
+              onChange={(e) => {
+                const val = e.target.value;
+                setQuery(val);
+                if (!val.trim() && selectedStockId) {
+                  loadProducts(selectedStockId);
+                }
+              }}
+              prefix={<IconSearch size={18} className="text-zinc-400 mr-1.5 shrink-0" />}
+              className="pos-search-input flex-1 rounded-xl bg-neutral-50 border-neutral-200 focus:bg-white focus:border-black hover:bg-white h-11 sm:h-12 shadow-none"
             />
             <button
               type="submit"
-              className="flex-1 sm:flex-none inline-flex items-center justify-center px-7 h-12 bg-black hover:bg-neutral-800 text-white font-extrabold text-xs uppercase tracking-widest rounded-xl transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer active:scale-98"
+              className="shrink-0 inline-flex items-center justify-center px-4 sm:px-6 h-11 sm:h-12 bg-black hover:bg-neutral-800 text-white font-extrabold text-xs uppercase tracking-wider rounded-xl transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer active:scale-95 select-none"
             >
               Search
             </button>

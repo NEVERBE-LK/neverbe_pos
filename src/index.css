@@ -131,3 +131,23 @@
 .ant-modal-header {
   margin-bottom: 20px !important;
 }
+
+/* POS Search Input & Placeholder Polish */
+.pos-search-input input {
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+.pos-search-input input::placeholder {
+  font-size: 12px !important;
+  font-weight: 400 !important;
+  color: #a1a1aa !important;
+  letter-spacing: normal !important;
+}
+@media (min-width: 640px) {
+  .pos-search-input input {
+    font-size: 14px !important;
+  }
+  .pos-search-input input::placeholder {
+    font-size: 13px !important;
+  }
+}
