@@ -309,9 +309,25 @@ export default function POSOnlineOrdersDialog({
                           {order.customer?.name || "Customer"}
                         </span>
                       </div>
-                      <span className="font-black text-neutral-900 font-mono">
-                        Rs. {order.total?.toLocaleString()}
-                      </span>
+                      <div className="text-right">
+                        <span className="font-black text-neutral-900 font-mono">
+                          Rs. {order.total?.toLocaleString()}
+                        </span>
+                        {(() => {
+                          const isCOD =
+                            (order.paymentMethod || "").toLowerCase().includes("cod") ||
+                            (order.paymentMethod || "").toLowerCase().includes("cash on delivery");
+                          if (isCOD && order.deliveryFeePrepaid) {
+                            const codBalance = Math.max(0, (order.total || 0) - (order.shippingFee || 450));
+                            return (
+                              <div className="text-[10px] font-bold text-amber-700 font-mono">
+                                COD Due: Rs. {codBalance.toLocaleString()}
+                              </div>
+                            );
+                          }
+                          return null;
+                        })()}
+                      </div>
                     </div>
 
                     <div className="flex items-center justify-between text-[10px] text-neutral-400 font-bold uppercase tracking-wider">
@@ -405,12 +421,39 @@ export default function POSOnlineOrdersDialog({
                   ))}
                 </div>
 
-                <div className="pt-3 border-t-2 border-neutral-900 flex justify-between items-baseline">
-                  <span className="font-black text-xs uppercase tracking-wider text-neutral-900">Total Order Amount</span>
-                  <span className="font-black text-xl text-neutral-950 font-mono">
-                    Rs. {selectedOrder.total?.toLocaleString()}
-                  </span>
-                </div>
+                {(() => {
+                  const isCOD =
+                    (selectedOrder.paymentMethod || "").toLowerCase().includes("cod") ||
+                    (selectedOrder.paymentMethod || "").toLowerCase().includes("cash on delivery");
+                  const isFeePrepaid = isCOD && !!selectedOrder.deliveryFeePrepaid;
+                  const shippingFee = selectedOrder.shippingFee || 450;
+                  const codBalance = Math.max(0, (selectedOrder.total || 0) - shippingFee);
+
+                  return (
+                    <div className="pt-3 border-t-2 border-neutral-900 space-y-1.5">
+                      <div className="flex justify-between items-baseline">
+                        <span className="font-black text-xs uppercase tracking-wider text-neutral-900">Total Order Amount</span>
+                        <span className="font-black text-xl text-neutral-950 font-mono">
+                          Rs. {selectedOrder.total?.toLocaleString()}
+                        </span>
+                      </div>
+                      {isFeePrepaid && (
+                        <>
+                          <div className="flex justify-between items-center text-xs font-bold text-emerald-600">
+                            <span>Prepaid Delivery Fee (Online)</span>
+                            <span className="font-mono">- Rs. {shippingFee.toLocaleString()}</span>
+                          </div>
+                          <div className="flex justify-between items-baseline pt-1.5 border-t border-dashed border-neutral-200">
+                            <span className="font-black text-xs uppercase tracking-wider text-amber-700">COD Balance to Collect</span>
+                            <span className="font-black text-lg text-amber-700 font-mono">
+                              Rs. {codBalance.toLocaleString()}
+                            </span>
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  );
+                })()}
               </div>
 
               {/* Fulfillment Controls - Processing to Completed flow */}

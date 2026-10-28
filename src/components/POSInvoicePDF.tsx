@@ -57,6 +57,13 @@ const POSInvoicePDF: React.FC<InvoicePDFProps> = ({ order }) => {
     0
   );
 
+  const isCOD =
+    (order.paymentMethod || "").toLowerCase().includes("cod") ||
+    (order.paymentMethod || "").toLowerCase().includes("cash on delivery");
+  const isFeePrepaid = isCOD && !!order.deliveryFeePrepaid;
+  const prepaidShipping = isFeePrepaid ? (order.shippingFee || 450) : 0;
+  const codBalance = Math.max(0, (order.total || 0) - prepaidShipping);
+
   return (
     <Document>
       <Page size={{ width: "48mm", height: "274mm" }} style={styles.page}>
@@ -138,9 +145,19 @@ const POSInvoicePDF: React.FC<InvoicePDFProps> = ({ order }) => {
           {(order.fee || 0) > 0 && (
             <Text style={{ fontSize: 7 }}>Fee: {order.fee.toFixed(2)}</Text>
           )}
+          {isFeePrepaid && (
+            <Text style={{ fontSize: 7 }}>
+              Prepaid Delivery Fee: -{prepaidShipping.toFixed(2)}
+            </Text>
+          )}
           <Text style={{ fontSize: 8, fontWeight: "bold" }}>
             Total: {order.total.toFixed(2)}
           </Text>
+          {isFeePrepaid && (
+            <Text style={{ fontSize: 8, fontWeight: "bold" }}>
+              COD Due: {codBalance.toFixed(2)}
+            </Text>
+          )}
         </View>
 
         <View style={styles.hr} />
