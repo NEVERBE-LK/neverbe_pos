@@ -107,7 +107,10 @@ export default function POSPaymentForm() {
   const pendingDue = grandTotal - paymentsTotal;
 
   const isKokoSelected = useMemo(() => {
-    return selectedMethod?.paymentId === "pm-006";
+    if (!selectedMethod) return false;
+    const id = (selectedMethod.paymentId || "").toLowerCase();
+    const name = (selectedMethod.name || "").toLowerCase();
+    return id === "pm-006" || name.includes("koko");
   }, [selectedMethod]);
 
   const preCalculatedAmount = useMemo(() => {
@@ -192,7 +195,7 @@ export default function POSPaymentForm() {
     }
 
     if (isKokoSelected && !referenceId.trim()) {
-      toast.error("Please enter the KOKO Payment ID");
+      toast.error("Please enter the KOKO Payment Reference ID");
       return;
     }
 
@@ -349,7 +352,23 @@ export default function POSPaymentForm() {
         <span className="font-bold uppercase">{method}</span>
       ),
     },
-    { title: "Card", dataIndex: "cardNumber", key: "cardNumber" },
+    {
+      title: "Card / Ref",
+      key: "reference",
+      render: (_: any, record: POSPayment) => {
+        if (record.referenceId) {
+          return (
+            <span className="font-mono text-xs font-bold bg-neutral-100 px-2 py-0.5 rounded border border-neutral-200">
+              {record.referenceId}
+            </span>
+          );
+        }
+        if (record.cardNumber && record.cardNumber !== "None") {
+          return <span className="font-mono text-xs">•••• {record.cardNumber}</span>;
+        }
+        return <span className="text-neutral-400">-</span>;
+      },
+    },
     {
       title: "Amount (LKR)",
       dataIndex: "amount",
@@ -539,13 +558,18 @@ export default function POSPaymentForm() {
                 </span>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 items-end">
+                  {/* Payment Method Selector */}
                   <div className="flex flex-col gap-1">
                     <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500">
                       Method
                     </span>
                     <Select
                       value={selectedPaymentMethod}
-                      onChange={(value) => setSelectedPaymentMethod(value)}
+                      onChange={(value) => {
+                        setSelectedPaymentMethod(value);
+                        setReferenceId("");
+                        setCardNumber("");
+                      }}
                       className="[&_.ant-select-selector]:!rounded-xl h-[42px] font-bold w-full"
                       options={availableMethods.map((m) => ({
                         value: m.name.toLowerCase(),
@@ -554,7 +578,8 @@ export default function POSPaymentForm() {
                     />
                   </div>
 
-                  {selectedMethod && (selectedMethod.customerFee || 0) > 0 ? (
+                  {/* Customer Fee Switch (if applicable) */}
+                  {selectedMethod && (selectedMethod.customerFee || 0) > 0 && (
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500 whitespace-nowrap">
                         Customer Fee ({selectedMethod.customerFee}%)
@@ -568,10 +593,13 @@ export default function POSPaymentForm() {
                         />
                       </div>
                     </div>
-                  ) : selectedPaymentMethod === "card" ? (
+                  )}
+
+                  {/* Card Last 4 Digits (if Card) */}
+                  {selectedPaymentMethod === "card" && (
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500">
-                        Card Last 4
+                        Card Last 4 <span className="text-red-500">*</span>
                       </span>
                       <Input
                         value={cardNumber}
@@ -579,6 +607,39 @@ export default function POSPaymentForm() {
                         maxLength={4}
                         placeholder="e.g. 4242"
                         className="rounded-xl h-[42px] font-mono font-bold w-full"
+                      />
+                    </div>
+                  )}
+
+                  {/* Reference ID / Note Input */}
+                  {isKokoSelected ? (
+                    <div className="flex flex-col gap-1">
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-900 font-mono">
+                          KOKO Reference ID <span className="text-red-500">*</span>
+                        </span>
+                        <span className="text-[9px] font-bold text-amber-700 bg-amber-50 px-1.5 py-0.2 rounded border border-amber-200">
+                          Required
+                        </span>
+                      </div>
+                      <Input
+                        value={referenceId}
+                        onChange={(e) => setReferenceId(e.target.value)}
+                        placeholder="Enter KOKO Payment / Order ID"
+                        className="rounded-xl h-[42px] font-mono font-bold text-xs w-full border-neutral-300 focus:border-black"
+                        autoFocus
+                      />
+                    </div>
+                  ) : selectedPaymentMethod === "card" ? (
+                    <div className="flex flex-col gap-1">
+                      <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500">
+                        Reference / Slip ID
+                      </span>
+                      <Input
+                        value={referenceId}
+                        onChange={(e) => setReferenceId(e.target.value)}
+                        placeholder="Optional (terminal slip #)"
+                        className="rounded-xl h-[42px] font-medium text-xs w-full"
                       />
                     </div>
                   ) : (
@@ -595,20 +656,7 @@ export default function POSPaymentForm() {
                     </div>
                   )}
 
-                  {selectedPaymentMethod === "card" && (
-                    <div className="flex flex-col gap-1">
-                      <span className="text-[10px] font-black uppercase tracking-[0.15em] text-neutral-500">
-                        Reference ID
-                      </span>
-                      <Input
-                        value={referenceId}
-                        onChange={(e) => setReferenceId(e.target.value)}
-                        placeholder="Optional"
-                        className="rounded-xl h-[42px] font-medium text-xs w-full"
-                      />
-                    </div>
-                  )}
-
+                  {/* Amount / Amount to Collect */}
                   {hasCustomerFee ? (
                     <div className="flex flex-col gap-1">
                       <span className="text-[10px] font-black uppercase tracking-[0.15em] text-emerald-700 whitespace-nowrap">
@@ -640,7 +688,7 @@ export default function POSPaymentForm() {
                       type="primary"
                       icon={<IconPlus size={18} />}
                       onClick={handleAddPayment}
-                      className="w-full rounded-xl shadow-xs font-black text-xs uppercase tracking-wider !bg-black hover:!bg-neutral-800 text-white h-[42px]"
+                      className="w-full rounded-xl shadow-xs font-black text-xs uppercase tracking-wider !bg-black hover:!bg-neutral-800 text-white h-[42px] cursor-pointer"
                     >
                       ADD PAYMENT TENDER
                     </Button>
