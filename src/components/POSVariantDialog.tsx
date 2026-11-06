@@ -13,6 +13,7 @@ interface POSVariantDialogProps {
   initialVariantId?: string;
   initialSize?: string;
   onAddToCart?: (item: any) => void;
+  hideVariantSelector?: boolean;
 }
 
 export default function POSVariantDialog({
@@ -22,6 +23,7 @@ export default function POSVariantDialog({
   initialVariantId,
   initialSize,
   onAddToCart,
+  hideVariantSelector,
 }: POSVariantDialogProps) {
   const { selectedStockId, addItemToCart } = usePOS();
 
@@ -93,12 +95,24 @@ export default function POSVariantDialog({
 
   useEffect(() => {
     if (open) {
-      let activeVar = product?.variants?.[0] || null;
-      if (initialVariantId && product?.variants?.length) {
-        const found = product.variants.find(
-          (v: any) => (v.id || v.variantId) === initialVariantId,
-        );
-        if (found) activeVar = found;
+      let activeVar = null;
+      if (product?.variants?.length) {
+        if (initialVariantId) {
+          const found = product.variants.find(
+            (v: any) => (v.id || v.variantId) === initialVariantId,
+          );
+          if (found) activeVar = found;
+        }
+        if (!activeVar) activeVar = product.variants[0];
+      } else {
+        activeVar = {
+          id: undefined,
+          variantId: undefined,
+          name: "Standard",
+          discount: 0,
+          thumbnail: product?.thumbnail,
+          sizes: Array.isArray(product?.sizes) ? product.sizes : [],
+        };
       }
       setSelectedVariant(activeVar);
       prevVariantIdRef.current = activeVar
@@ -155,12 +169,16 @@ export default function POSVariantDialog({
     // Use predefined sizes from the variant payload if available
     const variantSizes = Array.isArray(selectedVariant.sizes)
       ? selectedVariant.sizes
-      : [];
+      : Array.isArray(product?.sizes)
+        ? product.sizes
+        : [];
 
     if (variantSizes.length > 0) {
       return variantSizes.map((sizeOption) => {
         const invMatch = inventory.find(
-          (inv) => inv.variantId === targetVariantId && inv.size === sizeOption,
+          (inv) =>
+            (inv.variantId === targetVariantId || !targetVariantId) &&
+            inv.size === sizeOption,
         );
         return {
           size: sizeOption,
@@ -173,7 +191,7 @@ export default function POSVariantDialog({
     if (!inventory.length) return [];
 
     return inventory
-      .filter((inv) => inv.variantId === targetVariantId)
+      .filter((inv) => inv.variantId === targetVariantId || !targetVariantId)
       .map((inv) => ({
         size: inv.size,
         stock: inv.quantity,
@@ -181,6 +199,7 @@ export default function POSVariantDialog({
   };
 
   const availableSizes = getVariantSizes();
+  const hasSizes = availableSizes.length > 0;
 
   const getSelectedStock = () => {
     if (!selectedVariant || !selectedSize) return 0;
@@ -193,8 +212,13 @@ export default function POSVariantDialog({
   };
 
   const handleAddToCart = async () => {
-    if (!selectedVariant || !selectedSize || !product) {
-      toast.error("Please select variant and size");
+    if (!product || !selectedVariant) {
+      toast.error("Invalid item selection");
+      return;
+    }
+
+    if (hasSizes && !selectedSize) {
+      toast.error("Please select a size");
       return;
     }
 
@@ -204,7 +228,7 @@ export default function POSVariantDialog({
     }
 
     const stockQty = getSelectedStock();
-    if (quantity > stockQty) {
+    if (quantity > stockQty && stockQty > 0) {
       toast("Warning: Quantity exceeds available stock", { icon: "⚠️" });
     }
 
@@ -222,14 +246,14 @@ export default function POSVariantDialog({
         name: product.name,
         variantName: formatVariantName(selectedVariant),
         thumbnail: getVariantImage(selectedVariant, product),
-        size: selectedSize,
+        size: hasSizes ? selectedSize : "Standard",
         discount:
           (autoDiscountPerUnit + parseFloat(discount.toString() || "0")) *
           quantity,
         type: "product",
         quantity: quantity,
         price: product.sellingPrice,
-        bPrice: product.buyingPrice,
+        bPrice: product.buyingPrice || 0,
         stockId: selectedStockId!,
         isMinusStock: stockQty <= 0,
       };
@@ -240,10 +264,12 @@ export default function POSVariantDialog({
         onClose();
       } else {
         await addItemToCart(itemData);
-        toast.success(`${product.name} (${selectedSize}) added to cart`);
+        toast.success(
+          `${product.name} (${hasSizes ? selectedSize : "Standard"}) added to cart`
+        );
         setQuantity(1);
         setDiscount(0);
-        // Do not auto-close dialog after adding to cart
+        onClose();
       }
     } catch (error: any) {
       toast.error(error.message || "Failed to add to cart");
@@ -259,7 +285,7 @@ export default function POSVariantDialog({
     <Modal
       open={open}
       onCancel={onClose}
-      width="min(920px, 95vw)"
+      width="min(840px, 95vw)"
       centered
       footer={null}
       closeIcon={null}
@@ -271,21 +297,33 @@ export default function POSVariantDialog({
         <div>
           <div className="flex items-center gap-2 mb-1">
             <span className="text-[10px] font-black uppercase tracking-[0.2em] text-neutral-400">
-              PRODUCT SELECTOR
+              ITEM CONFIGURATOR
             </span>
-            {product.discount > 0 && (
+            {discountPercent > 0 && (
               <span className="bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 px-2 py-0.5 rounded-full text-[10px] font-black tracking-wider">
-                {product.discount}% OFF
+                {discountPercent}% OFF
               </span>
             )}
           </div>
-          <h2 className="text-xl font-black text-white tracking-tight leading-tight">
-            {product.name}
-          </h2>
+          <div className="flex items-center gap-2.5 flex-wrap">
+            <h2 className="text-xl font-black text-white tracking-tight leading-tight">
+              {product.name}
+            </h2>
+            {selectedVariant && formatVariantName(selectedVariant) && formatVariantName(selectedVariant) !== "Standard" && (
+              <span className="bg-neutral-800 text-neutral-200 border border-neutral-700 px-2.5 py-0.5 rounded-lg text-xs font-black tracking-wider uppercase">
+                {formatVariantName(selectedVariant)}
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-2 mt-1">
-            <span className="text-base text-neutral-300 font-extrabold tracking-tight">
-              Rs. {product.sellingPrice?.toLocaleString()}
+            <span className="text-base text-neutral-200 font-extrabold tracking-tight">
+              Rs. {roundedPrice.toLocaleString()}
             </span>
+            {discountPercent > 0 && (
+              <span className="line-through text-neutral-500 text-xs font-semibold">
+                Rs. {basePrice.toLocaleString()}
+              </span>
+            )}
           </div>
         </div>
         <button
@@ -316,7 +354,7 @@ export default function POSVariantDialog({
 
               {/* Selected Attributes Chips */}
               <div className="flex flex-wrap gap-1.5">
-                {selectedVariant && (
+                {selectedVariant && formatVariantName(selectedVariant) && formatVariantName(selectedVariant) !== "Standard" && (
                   <span className="px-2.5 py-1 rounded-xl bg-neutral-100 text-neutral-800 text-[11px] font-bold border border-neutral-200">
                     {formatVariantName(selectedVariant)}
                   </span>
@@ -325,11 +363,11 @@ export default function POSVariantDialog({
                   <span className="px-2.5 py-1 rounded-xl bg-neutral-900 text-white text-[11px] font-black">
                     Size: {selectedSize}
                   </span>
-                ) : (
+                ) : hasSizes ? (
                   <span className="px-2.5 py-1 rounded-xl bg-amber-50 text-amber-700 text-[11px] font-bold border border-amber-200">
                     Select Size
                   </span>
-                )}
+                ) : null}
               </div>
 
               {/* Price & Total Summary */}
@@ -367,8 +405,8 @@ export default function POSVariantDialog({
 
             {/* Right: Interactive Selections (7 cols) */}
             <div className="md:col-span-7 flex flex-col gap-5">
-              {/* Variant Selection */}
-              {product.variants && product.variants.length > 0 && (
+              {/* Variant Selection (only shown when variants are NOT decoupled, e.g. generic product search) */}
+              {!hideVariantSelector && !initialVariantId && product.variants && product.variants.length > 1 && (
                 <div>
                   <p className="text-[11px] font-black uppercase tracking-[0.15em] text-neutral-500 mb-2.5 font-mono">
                     Select Variant
@@ -424,11 +462,11 @@ export default function POSVariantDialog({
               )}
 
               {/* Size Selection */}
-              <div>
-                <p className="text-[11px] font-black uppercase tracking-[0.15em] text-neutral-500 mb-2.5 font-mono">
-                  Select Size
-                </p>
-                {availableSizes.length > 0 ? (
+              {hasSizes && (
+                <div>
+                  <p className="text-[11px] font-black uppercase tracking-[0.15em] text-neutral-500 mb-2.5 font-mono">
+                    Select Size
+                  </p>
                   <div className="flex gap-2 flex-wrap">
                     {availableSizes.map((sizeObj) => {
                       const isSelected = selectedSize === sizeObj.size;
@@ -453,12 +491,8 @@ export default function POSVariantDialog({
                       );
                     })}
                   </div>
-                ) : (
-                  <p className="text-xs text-neutral-400 font-semibold italic">
-                    No sizes available for this variant
-                  </p>
-                )}
-              </div>
+                </div>
+              )}
 
               {/* Quantity */}
               <div>
@@ -487,10 +521,12 @@ export default function POSVariantDialog({
                   >
                     <IconPlus size={16} />
                   </button>
-                  <span className="ml-4 text-xs text-neutral-500 font-bold uppercase tracking-wider">
-                    Stock: <strong className="text-black">{getSelectedStock()}</strong>
-                  </span>
-                  {quantity > getSelectedStock() && (
+                  {hasSizes && (
+                    <span className="ml-4 text-xs text-neutral-500 font-bold uppercase tracking-wider">
+                      Stock: <strong className="text-black">{getSelectedStock()}</strong>
+                    </span>
+                  )}
+                  {hasSizes && quantity > getSelectedStock() && (
                     <span className="ml-2 text-[10px] bg-red-100 text-red-600 px-2 py-0.5 rounded-full font-black uppercase tracking-wider">
                       Exceeds
                     </span>
@@ -556,7 +592,7 @@ export default function POSVariantDialog({
         <Button
           type="primary"
           onClick={handleAddToCart}
-          disabled={!selectedVariant || !selectedSize || adding || loading}
+          disabled={!selectedVariant || (hasSizes && !selectedSize) || adding || loading}
           loading={adding}
           className="h-11 px-8 rounded-xl font-black shadow-md text-xs uppercase tracking-widest text-white !bg-black hover:!bg-neutral-800 disabled:!bg-neutral-300 transition-all"
           style={{ minWidth: 160 }}

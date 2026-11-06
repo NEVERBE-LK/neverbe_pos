@@ -2,6 +2,7 @@ import React, { useState, useMemo } from "react";
 import { usePOS } from "../context/POSContext";
 import POSVariantDialog from "./POSVariantDialog";
 import { IconPackageOff, IconPlus } from "@tabler/icons-react";
+import toast from "react-hot-toast";
 
 interface POSDecoupledItem {
   key: string;
@@ -42,7 +43,7 @@ const formatVariantName = (variant: any): string => {
 };
 
 export default function POSProducts() {
-  const { products, selectedStockId } = usePOS();
+  const { products, selectedStockId, addItemToCart } = usePOS();
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
   const [selectedVariantId, setSelectedVariantId] = useState<string | undefined>(undefined);
   const [selectedSize, setSelectedSize] = useState<string | undefined>(undefined);
@@ -127,7 +128,7 @@ export default function POSProducts() {
           sellingPrice,
           finalPrice,
           discount: discountPercent,
-          sizes: [],
+          sizes: Array.isArray(product.sizes) ? product.sizes : [],
         });
       }
     });
@@ -135,10 +136,116 @@ export default function POSProducts() {
     return items;
   }, [products, selectedCategory]);
 
-  const handleCardClick = (item: POSDecoupledItem, preselectedSize?: string) => {
+  // One-click direct add to cart for a specific size
+  const handleDirectAddSize = async (item: POSDecoupledItem, size: string) => {
+    if (!selectedStockId) {
+      toast.error("Please select a stock location first");
+      return;
+    }
+
+    const basePrice = item.product.sellingPrice || item.sellingPrice || 0;
+    const autoDiscountPerUnit = Math.max(0, basePrice - item.finalPrice);
+
+    let isMinusStock = false;
+    try {
+      const cached = localStorage.getItem(
+        `neverbePOSInventoryCache_${selectedStockId}_${item.product.id}`
+      );
+      if (cached) {
+        const inv = JSON.parse(cached);
+        const match = inv.find(
+          (i: any) =>
+            (i.variantId === item.variantId || !item.variantId) &&
+            i.size === size
+        );
+        if (match && match.quantity <= 0) {
+          isMinusStock = true;
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    const itemData: any = {
+      itemId: item.product.id,
+      variantId: item.variantId,
+      name: item.product.name,
+      variantName: item.variantName || "Standard",
+      thumbnail: item.thumbnail,
+      size: size,
+      discount: autoDiscountPerUnit * 1,
+      type: "product",
+      quantity: 1,
+      price: item.product.sellingPrice,
+      bPrice: item.product.buyingPrice || item.product.costPrice || 0,
+      stockId: selectedStockId,
+      isMinusStock,
+    };
+
+    try {
+      await addItemToCart(itemData);
+      toast.success(
+        `Added ${item.name} (${item.variantName ? `${item.variantName} · ` : ""}Size ${size})`,
+        { id: `cart-${item.key}-${size}`, duration: 1500 }
+      );
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add to cart");
+    }
+  };
+
+  // One-click direct add for items with no sizes
+  const handleDirectAddItem = async (item: POSDecoupledItem) => {
+    if (!selectedStockId) {
+      toast.error("Please select a stock location first");
+      return;
+    }
+
+    const basePrice = item.product.sellingPrice || item.sellingPrice || 0;
+    const autoDiscountPerUnit = Math.max(0, basePrice - item.finalPrice);
+
+    const itemData: any = {
+      itemId: item.product.id,
+      variantId: item.variantId,
+      name: item.product.name,
+      variantName: item.variantName || "Standard",
+      thumbnail: item.thumbnail,
+      size: "Standard",
+      discount: autoDiscountPerUnit * 1,
+      type: "product",
+      quantity: 1,
+      price: item.product.sellingPrice,
+      bPrice: item.product.buyingPrice || item.product.costPrice || 0,
+      stockId: selectedStockId,
+      isMinusStock: false,
+    };
+
+    try {
+      await addItemToCart(itemData);
+      toast.success(
+        `Added ${item.name}${item.variantName ? ` (${item.variantName})` : ""}`,
+        { id: `cart-${item.key}`, duration: 1500 }
+      );
+    } catch (err: any) {
+      toast.error(err.message || "Failed to add to cart");
+    }
+  };
+
+  // Card click handler:
+  // - If item has no sizes: direct 1-click add
+  // - If item has 1 size: direct 1-click add with that size
+  // - If item has multiple sizes: opens streamlined dialog to pick size or configure quantity
+  const handleCardClick = (item: POSDecoupledItem) => {
+    if (!item.sizes || item.sizes.length === 0) {
+      handleDirectAddItem(item);
+      return;
+    }
+    if (item.sizes.length === 1) {
+      handleDirectAddSize(item, item.sizes[0]);
+      return;
+    }
     setSelectedProduct(item.product);
     setSelectedVariantId(item.variantId);
-    setSelectedSize(preselectedSize);
+    setSelectedSize(undefined);
     setVariantDialogOpen(true);
   };
 
@@ -274,28 +381,23 @@ export default function POSProducts() {
                     {item.name}
                   </h3>
 
-                  {/* Quick Size Select Pills */}
+                  {/* Quick Size Select Pills - 1-Click Direct Add to Cart */}
                   {item.sizes.length > 0 && (
                     <div className="flex items-center gap-1 flex-wrap mb-2.5 pt-0.5">
-                      {item.sizes.slice(0, 5).map((size: string) => (
+                      {item.sizes.map((size: string) => (
                         <button
                           key={size}
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleCardClick(item, size);
+                            handleDirectAddSize(item, size);
                           }}
-                          className="px-1.5 py-0.5 rounded bg-neutral-100 hover:bg-black hover:text-white text-neutral-700 text-[9px] font-bold border border-neutral-200/80 transition-all cursor-pointer active:scale-95"
-                          title={`Select size ${size}`}
+                          className="px-2 py-0.5 rounded-md bg-neutral-100 hover:bg-black hover:text-white text-neutral-800 text-[10px] font-black border border-neutral-200/80 transition-all cursor-pointer active:scale-95 shadow-2xs"
+                          title={`Add size ${size} to cart`}
                         >
                           {size}
                         </button>
                       ))}
-                      {item.sizes.length > 5 && (
-                        <span className="text-[9px] font-bold text-zinc-400 px-0.5 select-none">
-                          +{item.sizes.length - 5}
-                        </span>
-                      )}
                     </div>
                   )}
 
@@ -319,7 +421,7 @@ export default function POSProducts() {
         )}
       </div>
 
-      {/* Variant & Size Selection Dialog */}
+      {/* Streamlined Size & Quantity Dialog (Focused on decoupled variant) */}
       <POSVariantDialog
         open={variantDialogOpen}
         onClose={() => {
@@ -331,6 +433,7 @@ export default function POSProducts() {
         product={selectedProduct}
         initialVariantId={selectedVariantId}
         initialSize={selectedSize}
+        hideVariantSelector={true}
       />
     </>
   );
