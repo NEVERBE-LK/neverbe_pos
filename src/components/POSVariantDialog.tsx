@@ -10,6 +10,8 @@ interface POSVariantDialogProps {
   open: boolean;
   onClose: () => void;
   product: any;
+  initialVariantId?: string;
+  initialSize?: string;
   onAddToCart?: (item: any) => void;
 }
 
@@ -17,6 +19,8 @@ export default function POSVariantDialog({
   open,
   onClose,
   product,
+  initialVariantId,
+  initialSize,
   onAddToCart,
 }: POSVariantDialogProps) {
   const { selectedStockId, addItemToCart } = usePOS();
@@ -69,25 +73,54 @@ export default function POSVariantDialog({
       .join(" ");
   };
 
+  const getVariantImage = (variant: any, p: any): string => {
+    if (variant?.images?.[0]?.url) return variant.images[0].url;
+    if (typeof variant?.images?.[0] === "string") return variant.images[0];
+    if (variant?.thumbnail?.url) return variant.thumbnail.url;
+    if (typeof variant?.thumbnail === "string") return variant.thumbnail;
+    if (p?.thumbnail?.url) return p.thumbnail.url;
+    if (typeof p?.thumbnail === "string") return p.thumbnail;
+    return "/placeholder.png";
+  };
+
   useEffect(() => {
     if (open && product && selectedStockId) {
       fetchInventory();
     }
   }, [open, product, selectedStockId]);
 
+  const prevVariantIdRef = React.useRef<string | null>(null);
+
   useEffect(() => {
     if (open) {
-      setSelectedVariant(product?.variants?.[0] || null);
-      setSelectedSize("");
+      let activeVar = product?.variants?.[0] || null;
+      if (initialVariantId && product?.variants?.length) {
+        const found = product.variants.find(
+          (v: any) => (v.id || v.variantId) === initialVariantId,
+        );
+        if (found) activeVar = found;
+      }
+      setSelectedVariant(activeVar);
+      prevVariantIdRef.current = activeVar
+        ? activeVar.id || activeVar.variantId
+        : null;
+      setSelectedSize(initialSize || "");
       setQuantity(1);
       setDiscount(0);
+    } else {
+      prevVariantIdRef.current = null;
     }
-  }, [open, product]);
+  }, [open, product, initialVariantId, initialSize]);
 
-  // Clear size when variant changes
+  // Clear size only when user explicitly switches variant inside an open dialog
   useEffect(() => {
-    setSelectedSize("");
-  }, [selectedVariant]);
+    if (!open || !selectedVariant) return;
+    const currentId = selectedVariant.id || selectedVariant.variantId;
+    if (prevVariantIdRef.current && prevVariantIdRef.current !== currentId) {
+      setSelectedSize("");
+    }
+    prevVariantIdRef.current = currentId;
+  }, [selectedVariant, open]);
 
   const fetchInventory = async () => {
     if (!product || !selectedStockId) return;
@@ -188,7 +221,7 @@ export default function POSVariantDialog({
         variantId: selectedVariant.id || selectedVariant.variantId,
         name: product.name,
         variantName: formatVariantName(selectedVariant),
-        thumbnail: selectedVariant.images?.[0]?.url || product.thumbnail || "",
+        thumbnail: getVariantImage(selectedVariant, product),
         size: selectedSize,
         discount:
           (autoDiscountPerUnit + parseFloat(discount.toString() || "0")) *
@@ -275,7 +308,7 @@ export default function POSVariantDialog({
             <div className="md:col-span-5 flex flex-col gap-4">
               <div className="rounded-2xl border border-neutral-200 overflow-hidden bg-neutral-100 shadow-xs">
                 <img
-                  src={selectedVariant?.images?.[0]?.url || product.thumbnail}
+                  src={getVariantImage(selectedVariant, product)}
                   alt={product.name}
                   className="w-full h-48 object-cover"
                 />
@@ -359,7 +392,7 @@ export default function POSVariantDialog({
                           }`}
                         >
                           <img
-                            src={variant.images?.[0]?.url || product.thumbnail}
+                            src={getVariantImage(variant, product)}
                             alt={variant.variantName || "variant"}
                             width={38}
                             height={38}
